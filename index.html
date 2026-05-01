@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Puppy</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #ffffff;
+      cursor: none;
+      user-select: none;
+    }
+
+    #cursor-dot {
+      position: fixed;
+      width: 9px;
+      height: 9px;
+      background: rgba(180, 100, 220, 0.45);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: background 0.3s;
+    }
+
+    #dog-wrap {
+      position: fixed;
+      pointer-events: none;
+      z-index: 100;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    #dog-svg {
+      width: 148px;
+      height: 172px;
+      display: block;
+      filter: drop-shadow(0 8px 22px rgba(180, 80, 210, 0.22));
+      will-change: transform, filter;
+    }
+
+    #cam-wrap {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 200;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.09);
+      background: #111;
+      opacity: 0.72;
+      transition: opacity 0.2s;
+    }
+    #cam-wrap:hover { opacity: 1; }
+    #webcam {
+      display: block;
+      width: 144px;
+      height: 108px;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    #emotion-tag {
+      position: absolute;
+      inset: auto 0 0;
+      text-align: center;
+      padding: 4px 0 5px;
+      font: 10px/1 system-ui, sans-serif;
+      color: rgba(255,255,255,0.82);
+      background: rgba(0,0,0,0.28);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    #cam-toggle {
+      position: fixed;
+      bottom: 22px;
+      right: 178px;
+      z-index: 201;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(180,100,220,0.12);
+      color: rgba(100,60,140,0.55);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    #cam-toggle:hover { background: rgba(180,100,220,0.22); }
+
+    #hint {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%);
+      font: 11px/1 system-ui, sans-serif;
+      color: rgba(0,0,0,0.18);
+      letter-spacing: 0.1em;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+
+<!-- ── DOG SVG ──────────────────────────────────────────────────────── -->
+<div id="dog-wrap">
+  <svg id="dog-svg" viewBox="0 0 200 232" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+
+      <!-- BODY GRADIENT: warm peach → hot pink → violet -->
+      <radialGradient id="gBody" cx="68%" cy="22%" r="78%">
+        <stop id="b1" offset="0%"   stop-color="#fddbb0"/>
+        <stop id="b2" offset="26%"  stop-color="#f87bb6"/>
+        <stop id="b3" offset="55%"  stop-color="#c084fc"/>
+        <stop id="b4" offset="80%"  stop-color="#a855f7"/>
+        <stop id="b5" offset="100%" stop-color="#9333ea"/>
+      </radialGradient>
+
+      <!-- HEAD GRADIENT -->
+      <radialGradient id="gHead" cx="62%" cy="28%" r="72%">
+        <stop id="h1" offset="0%"   stop-color="#fde8d0"/>
+        <stop id="h2" offset="22%"  stop-color="#f9a0c8"/>
+        <stop id="h3" offset="52%"  stop-color="#c084fc"/>
+        <stop id="h4" offset="82%"  stop-color="#9333ea"/>
+        <stop id="h5" offset="100%" stop-color="#7c22cc"/>
+      </radialGradient>
+
+      <!-- EAR GRADIENT: warm coral → pink -->
+      <radialGradient id="gEar" cx="45%" cy="18%" r="82%">
+        <stop id="e1" offset="0%"   stop-color="#fed8a0"/>
+        <stop id="e2" offset="40%"  stop-color="#fb923c"/>
+        <stop id="e3" offset="78%"  stop-color="#ec4899"/>
+        <stop id="e4" offset="100%" stop-color="#be185d"/>
+      </radialGradient>
+
+      <!-- MUZZLE: white → blush -->
+      <radialGradient id="gMuzz" cx="40%" cy="32%" r="68%">
+        <stop offset="0%"   stop-color="#ffffff"/>
+        <stop offset="55%"  stop-color="#fde8f4"/>
+        <stop offset="100%" stop-color="#f9a8d4"/>
+      </radialGradient>
+
+      <!-- LEGS -->
+      <linearGradient id="gLeg" x1="15%" y1="0%" x2="85%" y2="100%">
+        <stop id="l1" offset="0%"   stop-color="#f9a8d4"/>
+        <stop id="l2" offset="100%" stop-color="#a855f7"/>
+      </linearGradient>
+
+      <!-- SPECULAR HIGHLIGHT (unchanged by theme) -->
+      <radialGradient id="gSpec" cx="30%" cy="22%" r="52%">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0.72)"/>
+        <stop offset="60%"  stop-color="rgba(255,255,255,0.18)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </radialGradient>
+
+      <!-- COLLAR -->
+      <linearGradient id="gCollar" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%"   stop-color="#ff8080"/>
+        <stop offset="100%" stop-color="#ff0044"/>
+      </linearGradient>
+
+      <!-- SOFT EDGE BLOOM FILTER -->
+      <filter id="fBloom" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="5" result="blur"/>
+        <feColorMatrix in="blur" type="matrix"
+          values="1 0 0 0 0
+                  0 1 0 0 0
+                  0 0 1 0 0
+                  0 0 0 1.4 0" result="bright"/>
+        <feMerge>
+          <feMergeNode in="bright"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+
+      <!-- GLOW (for run state) -->
+      <filter id="fGlow" x="-35%" y="-35%" width="170%" height="170%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="10" result="glow"/>
+        <feMerge>
+          <feMergeNode in="glow"/>
+          <feMergeNode in="glow"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+
+    </defs>
+
+    <!-- GROUND SHADOW -->
+    <ellipse cx="100" cy="226" rx="52" ry="7" fill="rgba(140,60,180,0.10)"/>
+
+    <!-- BACK LEGS (behind body) -->
+    <rect x="119" y="178" width="27" height="46" rx="13.5" fill="url(#gLeg)" opacity="0.80"/>
+    <rect x="54"  y="178" width="27" height="46" rx="13.5" fill="url(#gLeg)" opacity="0.80"/>
+
+    <!-- TAIL -->
+    <ellipse cx="155" cy="150" rx="12" ry="21" fill="url(#gEar)" transform="rotate(-24,155,150)" filter="url(#fBloom)"/>
+
+    <!-- BODY BLOOM -->
+    <ellipse cx="100" cy="168" rx="63" ry="55" fill="url(#gBody)" opacity="0.28" filter="url(#fBloom)"/>
+    <!-- BODY -->
+    <ellipse cx="100" cy="168" rx="63" ry="55" fill="url(#gBody)"/>
+    <!-- BODY SPECULAR -->
+    <ellipse cx="76"  cy="143" rx="32" ry="23" fill="url(#gSpec)"/>
+
+    <!-- FRONT LEGS (over body) -->
+    <rect x="119" y="190" width="27" height="40" rx="13.5" fill="url(#gLeg)"/>
+    <rect x="54"  y="190" width="27" height="40" rx="13.5" fill="url(#gLeg)"/>
+
+    <!-- NECK BRIDGE -->
+    <ellipse cx="100" cy="128" rx="34" ry="23" fill="url(#gHead)"/>
+
+    <!-- COLLAR -->
+    <path d="M 67 122 Q 100 135 133 122" stroke="url(#gCollar)" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <circle cx="100" cy="132" r="6.5" fill="#ff0055"/>
+    <circle cx="99"  cy="131" r="2.2" fill="rgba(255,210,225,0.55)"/>
+
+    <!-- LEFT EAR BLOOM -->
+    <ellipse cx="59" cy="74" rx="22" ry="35" fill="url(#gEar)" transform="rotate(-13,59,74)" opacity="0.30" filter="url(#fBloom)"/>
+    <!-- LEFT EAR -->
+    <ellipse cx="59" cy="74" rx="22" ry="35" fill="url(#gEar)" transform="rotate(-13,59,74)"/>
+
+    <!-- RIGHT EAR BLOOM -->
+    <ellipse cx="141" cy="74" rx="22" ry="35" fill="url(#gEar)" transform="rotate(13,141,74)" opacity="0.30" filter="url(#fBloom)"/>
+    <!-- RIGHT EAR -->
+    <ellipse cx="141" cy="74" rx="22" ry="35" fill="url(#gEar)" transform="rotate(13,141,74)"/>
+
+    <!-- HEAD BLOOM -->
+    <circle cx="100" cy="86" r="52" fill="url(#gHead)" opacity="0.25" filter="url(#fBloom)"/>
+    <!-- HEAD -->
+    <circle cx="100" cy="86" r="52" fill="url(#gHead)"/>
+    <!-- HEAD SPECULAR -->
+    <ellipse cx="77"  cy="63" rx="26" ry="19" fill="url(#gSpec)"/>
+
+    <!-- MUZZLE BLOOM -->
+    <ellipse cx="100" cy="102" rx="30" ry="24" fill="url(#gMuzz)" opacity="0.2" filter="url(#fBloom)"/>
+    <!-- MUZZLE -->
+    <ellipse cx="100" cy="102" rx="30" ry="24" fill="url(#gMuzz)"/>
+
+    <!-- EYES -->
+    <circle cx="81"  cy="79" r="8"   fill="#3b1f8c"/>
+    <circle cx="119" cy="79" r="8"   fill="#3b1f8c"/>
+    <circle cx="81"  cy="79" r="4.8" fill="#28125e"/>
+    <circle cx="119" cy="79" r="4.8" fill="#28125e"/>
+    <!-- Eye shine -->
+    <circle cx="84.2" cy="75.5" r="3"   fill="rgba(255,255,255,0.92)"/>
+    <circle cx="122.2" cy="75.5" r="3"  fill="rgba(255,255,255,0.92)"/>
+    <circle cx="78.5" cy="82"   r="1.4" fill="rgba(255,255,255,0.45)"/>
+    <circle cx="116.5" cy="82"  r="1.4" fill="rgba(255,255,255,0.45)"/>
+
+    <!-- NOSE -->
+    <ellipse cx="100" cy="96.5" rx="6.5" ry="5.5" fill="#3b1f8c"/>
+    <ellipse cx="98.8" cy="95"  rx="2.2" ry="1.8" fill="rgba(255,255,255,0.50)"/>
+
+    <!-- MOUTH -->
+    <path d="M 91 107 Q 100 114 109 107"
+          stroke="#9d60ef" stroke-width="2.6"
+          fill="none" stroke-linecap="round"/>
+
+  </svg>
+</div>
+<!-- ─────────────────────────────────────────────────────────────────── -->
+
+<div id="cam-wrap">
+  <video id="webcam" autoplay playsinline muted></video>
+  <div id="emotion-tag">—</div>
+</div>
+<button id="cam-toggle" title="Toggle camera">◎</button>
+
+<div id="hint">tap · stroke · circle around the puppy</div>
+
+
+<script type="module">
+/* ════════════════════════════════════════════════════════════════════
+   IMPORTS
+   ════════════════════════════════════════════════════════════════════ */
+import { FaceLandmarker, FilesetResolver }
+  from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
+
+
+/* ════════════════════════════════════════════════════════════════════
+   COLOR THEMES  (emotion → gradient stop colours)
+   ════════════════════════════════════════════════════════════════════ */
+const THEMES = {
+  default: {
+    body: ['#fddbb0','#f87bb6','#c084fc','#a855f7','#9333ea'],
+    head: ['#fde8d0','#f9a0c8','#c084fc','#9333ea','#7c22cc'],
+    ear:  ['#fed8a0','#fb923c','#ec4899','#be185d'],
+    leg:  ['#f9a8d4','#a855f7'],
+    glowR: 210, glowG: 100, glowB: 240,
+  },
+  happy: {
+    body: ['#fef08a','#fde047','#fb923c','#f59e0b','#d97706'],
+    head: ['#fefce8','#fef3c7','#fde047','#f59e0b','#b45309'],
+    ear:  ['#fef08a','#fde047','#fb923c','#ea580c'],
+    leg:  ['#fde047','#fb923c'],
+    glowR: 252, glowG: 200, glowB: 50,
+  },
+  angry: {
+    body: ['#fecaca','#f87171','#ef4444','#dc2626','#b91c1c'],
+    head: ['#fee2e2','#fca5a5','#f87171','#dc2626','#991b1b'],
+    ear:  ['#fecaca','#f87171','#ef4444','#b91c1c'],
+    leg:  ['#f87171','#dc2626'],
+    glowR: 240, glowG: 60, glowB: 60,
+  },
+  disgusted: {
+    body: ['#bbf7d0','#86efac','#4ade80','#22c55e','#15803d'],
+    head: ['#f0fdf4','#dcfce7','#86efac','#22c55e','#166534'],
+    ear:  ['#bbf7d0','#4ade80','#22c55e','#166534'],
+    leg:  ['#86efac','#16a34a'],
+    glowR: 50, glowG: 210, glowB: 100,
+  },
+  surprised: {
+    body: ['#bfdbfe','#60a5fa','#3b82f6','#818cf8','#6366f1'],
+    head: ['#eff6ff','#bfdbfe','#93c5fd','#6366f1','#4338ca'],
+    ear:  ['#bfdbfe','#60a5fa','#3b82f6','#4338ca'],
+    leg:  ['#60a5fa','#6366f1'],
+    glowR: 90, glowG: 150, glowB: 255,
+  },
+  sad: {
+    body: ['#e2e8f0','#94a3b8','#64748b','#60a5fa','#38bdf8'],
+    head: ['#f8fafc','#e2e8f0','#94a3b8','#475569','#334155'],
+    ear:  ['#e2e8f0','#94a3b8','#64748b','#475569'],
+    leg:  ['#94a3b8','#475569'],
+    glowR: 140, glowG: 160, glowB: 210,
+  },
+};
+
+const STOP_IDS = {
+  body: ['b1','b2','b3','b4','b5'],
+  head: ['h1','h2','h3','h4','h5'],
+  ear:  ['e1','e2','e3','e4'],
+  leg:  ['l1','l2'],
+};
+
+function applyTheme(name) {
+  const t = THEMES[name] || THEMES.default;
+  for (const [key, ids] of Object.entries(STOP_IDS)) {
+    t[key].forEach((color, i) => {
+      const el = document.getElementById(ids[i]);
+      if (el) el.setAttribute('stop-color', color);
+    });
+  }
+  currentTheme = t;
+  currentEmotion = name;
+  document.getElementById('emotion-tag').textContent = name;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════════════════════════════ */
+let dogX = innerWidth  / 2;
+let dogY = innerHeight / 2;
+let mx   = innerWidth  / 2;
+let my   = innerHeight / 2;
+
+let mode    = 'idle';  // idle | run | belly | spin
+let modeT   = 0;
+let breathT = 0;
+
+let pressed    = false;
+let pressX     = 0;
+let pressY     = 0;
+let pressT     = 0;
+let strokeDist = 0;
+
+let runTX = 0, runTY = 0;
+
+let prevAngle   = null;
+let angleHist   = [];
+let spinAngle   = 0;
+let facingLeft  = false;
+
+let currentEmotion = 'default';
+let currentTheme   = THEMES.default;
+
+
+/* ════════════════════════════════════════════════════════════════════
+   DOM REFS
+   ════════════════════════════════════════════════════════════════════ */
+const dogWrap   = document.getElementById('dog-wrap');
+const dogSvg    = document.getElementById('dog-svg');
+const cursorDot = document.getElementById('cursor-dot');
+
+
+/* ════════════════════════════════════════════════════════════════════
+   HELPERS
+   ════════════════════════════════════════════════════════════════════ */
+const DOG_R = 74;   // interaction hit radius
+
+function dist(ax, ay, bx, by) {
+  return Math.hypot(ax - bx, ay - by);
+}
+
+function pickRunTarget() {
+  const pad = 100;
+  runTX = pad + Math.random() * (innerWidth  - pad * 2);
+  runTY = pad + Math.random() * (innerHeight - pad * 2);
+}
+
+function setGlow(on) {
+  const { glowR, glowG, glowB } = currentTheme;
+  if (on) {
+    dogSvg.style.filter =
+      `drop-shadow(0 0 22px rgba(${glowR},${glowG},${glowB},0.90))
+       drop-shadow(0 0 48px rgba(${glowR},${glowG},${glowB},0.50))`;
+  } else {
+    dogSvg.style.filter =
+      `drop-shadow(0 8px 22px rgba(180,80,210,0.22))`;
+  }
+}
+
+function enterMode(m) {
+  if (mode === m) return;
+  mode  = m;
+  modeT = 0;
+
+  if (m === 'run') {
+    pickRunTarget();
+    setGlow(true);
+  } else {
+    setGlow(false);
+  }
+
+  if (m !== 'spin') {
+    spinAngle = 0;
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   INPUT EVENTS
+   ════════════════════════════════════════════════════════════════════ */
+document.addEventListener('mousemove', e => {
+  mx = e.clientX;
+  my = e.clientY;
+  cursorDot.style.left = mx + 'px';
+  cursorDot.style.top  = my + 'px';
+
+  if (pressed && mode !== 'run') {
+    strokeDist = dist(mx, my, pressX, pressY);
+    const onDog = dist(mx, my, dogX, dogY) < DOG_R + 28;
+    if (strokeDist > 18 && onDog) enterMode('belly');
+  }
+});
+
+document.addEventListener('mousedown', e => {
+  pressed    = true;
+  pressX     = e.clientX;
+  pressY     = e.clientY;
+  pressT     = performance.now();
+  strokeDist = 0;
+});
+
+document.addEventListener('mouseup', e => {
+  if (!pressed) return;
+  const moved    = dist(e.clientX, e.clientY, pressX, pressY);
+  const duration = performance.now() - pressT;
+  const onDog    = dist(e.clientX, e.clientY, dogX, dogY) < DOG_R;
+
+  if (moved < 14 && duration < 360 && onDog && mode === 'idle') {
+    enterMode('run');
+  }
+
+  pressed = false;
+
+  if (mode === 'belly') {
+    setTimeout(() => { if (mode === 'belly') enterMode('idle'); }, 1800);
+  }
+});
+
+/* Touch support */
+document.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  pressX = t.clientX; pressY = t.clientY; pressT = performance.now();
+  strokeDist = 0; pressed = true;
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  mx = t.clientX; my = t.clientY;
+  if (pressed && mode !== 'run') {
+    strokeDist = dist(mx, my, pressX, pressY);
+    const onDog = dist(mx, my, dogX, dogY) < DOG_R + 28;
+    if (strokeDist > 18 && onDog) enterMode('belly');
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  const ch = e.changedTouches[0];
+  const moved    = dist(ch.clientX, ch.clientY, pressX, pressY);
+  const duration = performance.now() - pressT;
+  const onDog    = dist(ch.clientX, ch.clientY, dogX, dogY) < DOG_R;
+  if (moved < 14 && duration < 360 && onDog && mode === 'idle') enterMode('run');
+  pressed = false;
+  if (mode === 'belly') setTimeout(() => { if (mode === 'belly') enterMode('idle'); }, 1800);
+}, { passive: true });
+
+
+/* ════════════════════════════════════════════════════════════════════
+   CIRCULAR MOTION DETECTOR
+   ════════════════════════════════════════════════════════════════════ */
+function detectCircle() {
+  const dx   = mx - dogX;
+  const dy   = my - dogY;
+  const d    = Math.hypot(dx, dy);
+
+  if (d < 62 || d > 230) {
+    angleHist = []; prevAngle = null;
+    return false;
+  }
+
+  const angle = Math.atan2(dy, dx);
+  if (prevAngle !== null) {
+    let delta = angle - prevAngle;
+    if (delta >  Math.PI) delta -= 2 * Math.PI;
+    if (delta < -Math.PI) delta += 2 * Math.PI;
+
+    angleHist.push(delta);
+    if (angleHist.length > 44) angleHist.shift();
+
+    const total = angleHist.reduce((a, b) => a + b, 0);
+    if (Math.abs(total) > Math.PI * 1.7) return true;
+  }
+  prevAngle = angle;
+  return false;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   ANIMATION LOOP
+   ════════════════════════════════════════════════════════════════════ */
+let prevTS = 0;
+
+function frame(ts) {
+  const dt = Math.min((ts - prevTS) / 1000, 0.05);
+  prevTS    = ts;
+  modeT    += dt;
+  breathT  += dt;
+
+  if (mode === 'idle')  tickIdle(dt);
+  if (mode === 'run')   tickRun(dt);
+  if (mode === 'belly') tickBelly(dt);
+  if (mode === 'spin')  tickSpin(dt);
+
+  dogWrap.style.left = dogX + 'px';
+  dogWrap.style.top  = dogY + 'px';
+
+  requestAnimationFrame(frame);
+}
+
+/* ── IDLE ── */
+function tickIdle(dt) {
+  const dx  = mx - dogX;
+  const dy  = my - dogY;
+  const d   = Math.hypot(dx, dy);
+  const gap = 68;
+
+  if (d > gap) {
+    dogX += dx * 0.065;
+    dogY += dy * 0.065;
+  }
+
+  if (detectCircle()) { enterMode('spin'); return; }
+
+  facingLeft = mx < dogX;
+  const scale = 1 + Math.sin(breathT * 1.55) * 0.022;
+  const fx    = facingLeft ? -1 : 1;
+  dogSvg.style.transform = `scale(${fx * scale}, ${scale})`;
+}
+
+/* ── RUN ── */
+function tickRun(dt) {
+  const dx = runTX - dogX;
+  const dy = runTY - dogY;
+  const d  = Math.hypot(dx, dy);
+
+  if (d < 28) pickRunTarget();
+
+  dogX += dx * 0.22;
+  dogY += dy * 0.22;
+
+  facingLeft = dx < 0;
+  const ph      = modeT * 9;
+  const bounce  = Math.abs(Math.sin(ph)) * 13;
+  const scaleY  = 1 + Math.abs(Math.sin(ph)) * 0.13;
+  const fx      = facingLeft ? -1 : 1;
+  dogSvg.style.transform = `translate(0, ${-bounce}px) scale(${fx}, ${scaleY})`;
+
+  if (modeT > 3.6) {
+    enterMode('idle');
+    dogSvg.style.transform = '';
+  }
+}
+
+/* ── BELLY ── */
+function tickBelly(dt) {
+  dogX += (mx - dogX) * 0.016;
+  dogY += (my - dogY) * 0.016;
+
+  const wiggle = Math.sin(modeT * 7) * 8;
+  dogSvg.style.transform = `rotate(${88 + wiggle}deg) scale(0.86)`;
+}
+
+/* ── SPIN ── */
+function tickSpin(dt) {
+  spinAngle += dt * 540;
+  dogSvg.style.transform = `rotate(${spinAngle}deg)`;
+
+  if (modeT > 1.5) {
+    angleHist = []; prevAngle = null;
+    enterMode('idle');
+    dogSvg.style.transform = '';
+  }
+}
+
+requestAnimationFrame(frame);
+
+
+/* ════════════════════════════════════════════════════════════════════
+   CAMERA TOGGLE
+   ════════════════════════════════════════════════════════════════════ */
+const camWrap   = document.getElementById('cam-wrap');
+const camToggle = document.getElementById('cam-toggle');
+
+camToggle.addEventListener('click', () => {
+  const hidden = camWrap.style.display === 'none';
+  camWrap.style.display   = hidden ? '' : 'none';
+  camToggle.title = hidden ? 'Hide camera' : 'Show camera';
+});
+
+
+/* ════════════════════════════════════════════════════════════════════
+   MEDIAPIPE — FACE EXPRESSION → DOG COLOUR
+   ════════════════════════════════════════════════════════════════════ */
+async function initFace() {
+  let fl;
+  try {
+    const fsr = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    );
+    fl = await FaceLandmarker.createFromOptions(fsr, {
+      baseOptions: {
+        modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/face_landmarker/" +
+          "face_landmarker/float16/1/face_landmarker.task",
+        delegate: "GPU",
+      },
+      outputFaceBlendshapes: true,
+      runningMode: "VIDEO",
+      numFaces: 1,
+    });
+  } catch (err) {
+    console.warn("[face] MediaPipe init failed:", err);
+    camWrap.style.display   = 'none';
+    camToggle.style.display = 'none';
+    return;
+  }
+
+  const video = document.getElementById('webcam');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 320, height: 240, facingMode: 'user' },
+    });
+    video.srcObject = stream;
+    await new Promise(r => video.addEventListener('loadeddata', r, { once: true }));
+  } catch (err) {
+    console.warn("[face] Camera access denied:", err);
+    camWrap.style.display   = 'none';
+    camToggle.style.display = 'none';
+    return;
+  }
+
+  let lastVideoT = -1;
+  let tick       = 0;
+
+  function detect() {
+    tick++;
+    /* Run detection ~10fps to keep CPU light */
+    if (tick % 6 === 0 && video.currentTime !== lastVideoT) {
+      lastVideoT = video.currentTime;
+      const res = fl.detectForVideo(video, performance.now());
+      if (res.faceBlendshapes?.[0]) {
+        const emo = classify(res.faceBlendshapes[0].categories);
+        if (emo !== currentEmotion) {
+          applyTheme(emo);
+          if (mode === 'run') setGlow(true); // refresh glow with new colour
+        }
+      }
+    }
+    requestAnimationFrame(detect);
+  }
+  requestAnimationFrame(detect);
+}
+
+function classify(cats) {
+  const g = name => cats.find(c => c.categoryName === name)?.score ?? 0;
+
+  const happy     = (g('mouthSmileLeft')  + g('mouthSmileRight'))  * 0.50
+                  + (g('cheekSquintLeft') + g('cheekSquintRight'))  * 0.25;
+  const angry     = (g('browDownLeft')    + g('browDownRight'))     * 0.55
+                  + (g('mouthPressLeft')  + g('mouthPressRight'))   * 0.45;
+  const disgusted = (g('noseSneerLeft')   + g('noseSneerRight'))    * 0.65
+                  +  g('mouthShrugLower')                           * 0.35;
+  const surprised =  g('jawOpen')                                   * 0.55
+                  + (g('eyeWideLeft')     + g('eyeWideRight'))      * 0.45;
+  const sad       =  g('browInnerUp')                               * 0.40
+                  + (g('mouthFrownLeft')  + g('mouthFrownRight'))   * 0.60;
+
+  const scores  = { happy, angry, disgusted, surprised, sad };
+  const [top, score] = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+  return score > 0.30 ? top : 'default';
+}
+
+initFace();
+</script>
+
+</body>
+</html>
