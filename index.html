@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Puppy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #ffffff;
+      cursor: none;
+      user-select: none;
+    }
+
+    #cursor-dot {
+      position: fixed;
+      width: 9px;
+      height: 9px;
+      background: rgba(180, 110, 40, 0.45);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ── DOG WRAP ─────────────────────────────────────────────────── */
+    #dog-wrap {
+      position: fixed;
+      pointer-events: none;
+      z-index: 100;
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    #dog-svg {
+      /* natural size — JS will scaleX this for stretch */
+      width: 220px;
+      height: 136px;
+      display: block;
+      filter: drop-shadow(0 8px 20px rgba(140, 70, 20, 0.20));
+      will-change: transform, filter;
+      transform-origin: center center;
+    }
+
+    /* ── WEBCAM ───────────────────────────────────────────────────── */
+    #cam-wrap {
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 200;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.09);
+      background: #111;
+      opacity: 0.72;
+      transition: opacity 0.2s;
+    }
+    #cam-wrap:hover { opacity: 1; }
+    #webcam {
+      display: block;
+      width: 144px;
+      height: 108px;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+    #emotion-tag {
+      position: absolute;
+      inset: auto 0 0;
+      text-align: center;
+      padding: 4px 0 5px;
+      font: 10px/1 system-ui, sans-serif;
+      color: rgba(255,255,255,0.82);
+      background: rgba(0,0,0,0.28);
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    #cam-toggle {
+      position: fixed;
+      bottom: 22px;
+      right: 178px;
+      z-index: 201;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(160,90,30,0.12);
+      color: rgba(120,70,20,0.55);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    #cam-toggle:hover { background: rgba(160,90,30,0.22); }
+
+    /* ── PIXEL DIALOG BOX ─────────────────────────────────────────── */
+    #dialog-box {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(560px, calc(100vw - 32px));
+      z-index: 300;
+      font-family: 'Press Start 2P', monospace;
+    }
+    .pixel-panel {
+      background: #fff;
+      border: 4px solid #4a90d9;
+      border-radius: 16px;
+      box-shadow:
+        0 0 0 2px #fff,
+        0 0 0 5px #4a90d9,
+        4px 6px 0 4px rgba(0,0,0,0.10);
+      padding: 14px 16px 12px;
+    }
+    #chat-messages {
+      min-height: 44px;
+      max-height: 88px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      scrollbar-width: none;
+    }
+    #chat-messages::-webkit-scrollbar { display: none; }
+    .msg { font-size: 8px; line-height: 1.8; color: #222; animation: msgIn .15s ease; }
+    .msg.dog  { color: #b06020; }
+    .msg.user { color: #2563eb; }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #chat-row { display: flex; align-items: center; gap: 8px; }
+    #chat-input {
+      flex: 1;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      padding: 8px 10px;
+      border: 3px solid #4a90d9;
+      border-radius: 8px;
+      outline: none;
+      background: #f0f8ff;
+      color: #222;
+      caret-color: #b06020;
+    }
+    #chat-input::placeholder { color: #aac4e8; }
+    #chat-input:focus { border-color: #b06020; background: #fff; }
+    #chat-send {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      padding: 8px 10px;
+      background: #4a90d9;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #2563aa;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    #chat-send:hover  { background: #3b82f6; }
+    #chat-send:active { transform: translateY(2px); box-shadow: none; }
+    .blink {
+      display: inline-block; width: 8px; height: 10px;
+      background: #b06020; margin-left: 2px; vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* hold hint */
+    #hold-hint {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      color: rgba(0,0,0,0.18);
+      letter-spacing: 0.06em;
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity .3s;
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor-dot"></div>
+
+<!-- ── HOTDOG DOG SVG ─────────────────────────────────────────────── -->
+<div id="dog-wrap">
+  <svg id="dog-svg" viewBox="0 0 280 170" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+
+      <!-- BUN: warm cream, lit from top -->
+      <radialGradient id="gBun" cx="50%" cy="28%" r="65%">
+        <stop offset="0%"   stop-color="#faefd0"/>
+        <stop offset="50%"  stop-color="#eed8a0"/>
+        <stop offset="100%" stop-color="#c8a055"/>
+      </radialGradient>
+
+      <!-- BUN ENDS (slightly richer tone for the rounded end caps) -->
+      <radialGradient id="gBunEnd" cx="48%" cy="30%" r="62%">
+        <stop offset="0%"   stop-color="#f5e5b5"/>
+        <stop offset="55%"  stop-color="#ddc07a"/>
+        <stop offset="100%" stop-color="#b88a40"/>
+      </radialGradient>
+
+      <!-- SAUSAGE body -->
+      <radialGradient id="gSaus" cx="50%" cy="28%" r="68%">
+        <stop offset="0%"   stop-color="#d06838"/>
+        <stop offset="38%"  stop-color="#963820"/>
+        <stop offset="78%"  stop-color="#621f0c"/>
+        <stop offset="100%" stop-color="#3e1005"/>
+      </radialGradient>
+
+      <!-- MUSTARD — stops controlled by emotion theme -->
+      <linearGradient id="gMust" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop id="m1" offset="0%"   stop-color="#f5d840"/>
+        <stop id="m2" offset="100%" stop-color="#c8a010"/>
+      </linearGradient>
+
+      <!-- SPECULAR highlight -->
+      <radialGradient id="gSpec" cx="30%" cy="22%" r="55%">
+        <stop offset="0%"   stop-color="rgba(255,255,255,0.70)"/>
+        <stop offset="60%"  stop-color="rgba(255,255,255,0.15)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </radialGradient>
+
+      <!-- BLOOM (soft edge glow) -->
+      <filter id="fBloom" x="-22%" y="-22%" width="144%" height="144%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+
+    </defs>
+
+    <!-- SHADOW -->
+    <ellipse cx="140" cy="163" rx="95" ry="8" fill="rgba(100,50,10,0.13)"/>
+
+    <!-- ── BUN BODY (the large cream rounded slab) ─── -->
+    <rect x="12" y="62" width="256" height="86" rx="43" fill="url(#gBun)"/>
+    <!-- Bun underside darker rim -->
+    <rect x="14" y="104" width="252" height="44" rx="35" fill="#d4aa65"/>
+    <!-- Bun bottom highlight -->
+    <ellipse cx="140" cy="148" rx="100" ry="10" fill="rgba(255,240,180,0.25)"/>
+
+    <!-- ── SAUSAGE (sits inside the bun split) ─── -->
+    <rect x="9" y="72" width="262" height="68" rx="30" fill="url(#gSaus)"/>
+    <!-- Sausage top specular streak -->
+    <ellipse cx="130" cy="78" rx="72" ry="10" fill="url(#gSpec)"/>
+    <!-- Sausage bloom edge (softness) -->
+    <rect x="9" y="72" width="262" height="68" rx="30" fill="url(#gSaus)" opacity="0.22" filter="url(#fBloom)"/>
+
+    <!-- ── BUN LEFT CAP (covers the left end of sausage) ─── -->
+    <ellipse cx="34" cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
+    <!-- Left cap specular -->
+    <ellipse cx="26" cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
+
+    <!-- ── BUN RIGHT CAP ─── -->
+    <ellipse cx="246" cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
+    <!-- Right cap specular -->
+    <ellipse cx="238" cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
+
+    <!-- ── LEGS (peeking below bun) ─── -->
+    <!-- Back pair (behind) -->
+    <rect x="68"  y="130" width="22" height="36" rx="11" fill="#4e1a08" opacity="0.80"/>
+    <rect x="170" y="130" width="22" height="36" rx="11" fill="#4e1a08" opacity="0.80"/>
+    <!-- Front pair -->
+    <rect x="92"  y="133" width="22" height="33" rx="11" fill="#5c2010"/>
+    <rect x="146" y="133" width="22" height="33" rx="11" fill="#5c2010"/>
+
+    <!-- ── DOG FACE (left end of sausage) ─── -->
+
+    <!-- Left floppy ear -->
+    <ellipse cx="22" cy="96" rx="14" ry="20" fill="#4e1a08" transform="rotate(-12,22,96)"/>
+    <ellipse cx="22" cy="96" rx="14" ry="20" fill="#4e1a08" transform="rotate(-12,22,96)" opacity="0.3" filter="url(#fBloom)"/>
+
+    <!-- Muzzle patch (lighter area on sausage front face) -->
+    <ellipse cx="52" cy="107" rx="22" ry="18" fill="rgba(200,100,55,0.40)"/>
+
+    <!-- Eyes -->
+    <circle cx="42" cy="95"  r="7"   fill="#1a0804"/>
+    <circle cx="62" cy="93"  r="7"   fill="#1a0804"/>
+    <circle cx="42" cy="95"  r="4"   fill="#0d0402"/>
+    <circle cx="62" cy="93"  r="4"   fill="#0d0402"/>
+    <!-- Eye shine -->
+    <circle cx="44.5" cy="92.5" r="2.5" fill="rgba(255,255,255,0.75)"/>
+    <circle cx="64.5" cy="90.5" r="2.5" fill="rgba(255,255,255,0.75)"/>
+
+    <!-- Nose -->
+    <ellipse cx="52" cy="108" rx="7" ry="5.5" fill="#1a0804"/>
+    <ellipse cx="51" cy="106.5" rx="2.2" ry="1.6" fill="rgba(255,255,255,0.35)"/>
+
+    <!-- Mouth -->
+    <path d="M 44 116 Q 52 123 60 116"
+          stroke="#1a0804" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+
+    <!-- ── MUSTARD SQUIGGLE (across exposed sausage top) ─── -->
+    <path id="mustard-path"
+          d="M 72 68 C 82 54, 100 78, 118 64 C 136 50, 154 74, 172 60 C 188 47, 205 70, 218 58"
+          stroke="url(#gMust)" stroke-width="13" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Mustard bloom -->
+    <path d="M 72 68 C 82 54, 100 78, 118 64 C 136 50, 154 74, 172 60 C 188 47, 205 70, 218 58"
+          stroke="url(#gMust)" stroke-width="13" fill="none"
+          stroke-linecap="round" stroke-linejoin="round"
+          opacity="0.30" filter="url(#fBloom)"/>
+
+  </svg>
+</div>
+<!-- ───────────────────────────────────────────────────────────────── -->
+
+<div id="hold-hint">hold to stretch · tap · stroke · circle</div>
+
+<div id="cam-wrap">
+  <video id="webcam" autoplay playsinline muted></video>
+  <div id="emotion-tag">—</div>
+</div>
+<button id="cam-toggle" title="Toggle camera">◎</button>
+
+<div id="dialog-box">
+  <div class="pixel-panel">
+    <div id="chat-messages">
+      <div class="msg dog">Woof! What animal do you want me to be?<span class="blink"></span></div>
+    </div>
+    <div id="chat-row">
+      <input id="chat-input" type="text" maxlength="30" placeholder="type an animal..." autocomplete="off" spellcheck="false"/>
+      <button id="chat-send">OK ▶</button>
+    </div>
+  </div>
+</div>
+
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver }
+  from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
+
+
+/* ════════════════════════════════════════════════════════════════════
+   EMOTION → MUSTARD COLOUR THEMES
+   ════════════════════════════════════════════════════════════════════ */
+const THEMES = {
+  default:   { m1: '#f5d840', m2: '#c8a010', glowR: 220, glowG: 170, glowB:  10 },
+  happy:     { m1: '#ff9030', m2: '#e06000', glowR: 255, glowG: 140, glowB:   0 },
+  angry:     { m1: '#ff3a3a', m2: '#cc0000', glowR: 240, glowG:  40, glowB:  40 },
+  disgusted: { m1: '#7de040', m2: '#3da800', glowR:  80, glowG: 210, glowB:  30 },
+  surprised: { m1: '#60c8ff', m2: '#2080e0', glowR:  60, glowG: 170, glowB: 255 },
+  sad:       { m1: '#e0e8f4', m2: '#90a8c8', glowR: 160, glowG: 180, glowB: 220 },
+};
+
+let currentTheme   = THEMES.default;
+let currentEmotion = 'default';
+
+function applyTheme(name) {
+  const t = THEMES[name] || THEMES.default;
+  document.getElementById('m1').setAttribute('stop-color', t.m1);
+  document.getElementById('m2').setAttribute('stop-color', t.m2);
+  currentTheme   = t;
+  currentEmotion = name;
+  document.getElementById('emotion-tag').textContent = name;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════════════════════════════ */
+let dogX = innerWidth  / 2;
+let dogY = innerHeight / 2;
+let mx   = innerWidth  / 2;
+let my   = innerHeight / 2;
+
+let mode    = 'idle';   // idle | run | belly | spin
+let modeT   = 0;
+let breathT = 0;
+
+let pressed    = false;
+let pressX     = 0;
+let pressY     = 0;
+let pressT     = 0;
+let strokeDist = 0;
+
+let runTX = 0, runTY = 0;
+
+let prevAngle = null;
+let angleHist = [];
+let spinAngle = 0;
+let facingLeft = false;
+
+// Stretch state
+let stretchX       = 1.0;   // current horizontal scale
+const STRETCH_MAX  = 3.8;
+const STRETCH_RATE = 2.2;   // units per second when holding
+
+/* ════════════════════════════════════════════════════════════════════
+   DOM REFS
+   ════════════════════════════════════════════════════════════════════ */
+const dogWrap   = document.getElementById('dog-wrap');
+const dogSvg    = document.getElementById('dog-svg');
+const cursorDot = document.getElementById('cursor-dot');
+
+
+/* ════════════════════════════════════════════════════════════════════
+   HELPERS
+   ════════════════════════════════════════════════════════════════════ */
+const DOG_HIT_W = 110;  // half-width of hotdog hit area
+const DOG_HIT_H =  55;  // half-height
+
+function isOnDog(x, y) {
+  return Math.abs(x - dogX) < DOG_HIT_W && Math.abs(y - dogY) < DOG_HIT_H;
+}
+function dist(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
+
+function pickRunTarget() {
+  const pad = 120;
+  runTX = pad + Math.random() * (innerWidth  - pad * 2);
+  runTY = pad + Math.random() * (innerHeight - pad * 2);
+}
+
+function setGlow(on) {
+  const { glowR: r, glowG: g, glowB: b } = currentTheme;
+  dogSvg.style.filter = on
+    ? `drop-shadow(0 0 24px rgba(${r},${g},${b},0.92)) drop-shadow(0 0 50px rgba(${r},${g},${b},0.50))`
+    : `drop-shadow(0 8px 20px rgba(140,70,20,0.20))`;
+}
+
+function enterMode(m) {
+  if (mode === m) return;
+  mode  = m;
+  modeT = 0;
+  if (m === 'run') { pickRunTarget(); setGlow(true); }
+  else             { setGlow(false); }
+  if (m !== 'spin') spinAngle = 0;
+}
+
+/* Build the final transform string (called by every tick) */
+function applyTransform(opts = {}) {
+  const {
+    bounceY  = 0,
+    rotation = 0,
+    scaleY   = 1,
+    overrideX = null,   // absolute scaleX (ignores stretchX & facing)
+  } = opts;
+
+  const fx = facingLeft ? -1 : 1;
+  const sx = overrideX !== null ? overrideX : fx * stretchX;
+
+  dogSvg.style.transform =
+    `rotate(${rotation}deg) translateY(${bounceY}px) scale(${sx}, ${scaleY})`;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   INPUT EVENTS
+   ════════════════════════════════════════════════════════════════════ */
+document.addEventListener('mousemove', e => {
+  mx = e.clientX;
+  my = e.clientY;
+  cursorDot.style.left = mx + 'px';
+  cursorDot.style.top  = my + 'px';
+
+  if (pressed && mode !== 'run') {
+    strokeDist = dist(mx, my, pressX, pressY);
+    if (strokeDist > 18 && isOnDog(mx, my)) enterMode('belly');
+  }
+});
+
+document.addEventListener('mousedown', e => {
+  pressed    = true;
+  pressX     = e.clientX;
+  pressY     = e.clientY;
+  pressT     = performance.now();
+  strokeDist = 0;
+});
+
+document.addEventListener('mouseup', e => {
+  if (!pressed) return;
+  const moved    = dist(e.clientX, e.clientY, pressX, pressY);
+  const duration = performance.now() - pressT;
+  const onDog    = isOnDog(e.clientX, e.clientY);
+
+  if (moved < 14 && duration < 320 && onDog && mode === 'idle') {
+    enterMode('run');
+  }
+
+  pressed = false;
+
+  if (mode === 'belly') {
+    setTimeout(() => { if (mode === 'belly') enterMode('idle'); }, 1800);
+  }
+});
+
+/* Touch */
+document.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  pressX = t.clientX; pressY = t.clientY; pressT = performance.now();
+  strokeDist = 0; pressed = true;
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  mx = t.clientX; my = t.clientY;
+  if (pressed && mode !== 'run') {
+    strokeDist = dist(mx, my, pressX, pressY);
+    if (strokeDist > 18 && isOnDog(mx, my)) enterMode('belly');
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  const ch = e.changedTouches[0];
+  const moved    = dist(ch.clientX, ch.clientY, pressX, pressY);
+  const duration = performance.now() - pressT;
+  const onDog    = isOnDog(ch.clientX, ch.clientY);
+  if (moved < 14 && duration < 320 && onDog && mode === 'idle') enterMode('run');
+  pressed = false;
+  if (mode === 'belly') setTimeout(() => { if (mode === 'belly') enterMode('idle'); }, 1800);
+}, { passive: true });
+
+
+/* ════════════════════════════════════════════════════════════════════
+   CIRCULAR MOTION DETECTOR
+   ════════════════════════════════════════════════════════════════════ */
+function detectCircle() {
+  const dx = mx - dogX, dy = my - dogY;
+  const d  = Math.hypot(dx, dy);
+  if (d < 70 || d > 260) { angleHist = []; prevAngle = null; return false; }
+
+  const angle = Math.atan2(dy, dx);
+  if (prevAngle !== null) {
+    let delta = angle - prevAngle;
+    if (delta >  Math.PI) delta -= 2 * Math.PI;
+    if (delta < -Math.PI) delta += 2 * Math.PI;
+    angleHist.push(delta);
+    if (angleHist.length > 44) angleHist.shift();
+    if (Math.abs(angleHist.reduce((a, b) => a + b, 0)) > Math.PI * 1.7) return true;
+  }
+  prevAngle = angle;
+  return false;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════
+   ANIMATION LOOP
+   ════════════════════════════════════════════════════════════════════ */
+let prevTS = 0;
+
+function frame(ts) {
+  const dt = Math.min((ts - prevTS) / 1000, 0.05);
+  prevTS    = ts;
+  modeT    += dt;
+  breathT  += dt;
+
+  /* ── STRETCH logic ──────────────────────────────────────────────── */
+  if (pressed && mode !== 'belly' && mode !== 'spin') {
+    const holdSec = (performance.now() - pressT) / 1000;
+    if (holdSec > 0.18) {
+      stretchX = Math.min(1 + (holdSec - 0.18) * STRETCH_RATE, STRETCH_MAX);
+    }
+  } else {
+    // Spring back
+    stretchX += (1.0 - stretchX) * 0.10;
+    if (Math.abs(stretchX - 1.0) < 0.005) stretchX = 1.0;
+  }
+
+  /* ── Mode tick ──────────────────────────────────────────────────── */
+  if (mode === 'idle')  tickIdle(dt);
+  if (mode === 'run')   tickRun(dt);
+  if (mode === 'belly') tickBelly(dt);
+  if (mode === 'spin')  tickSpin(dt);
+
+  dogWrap.style.left = dogX + 'px';
+  dogWrap.style.top  = dogY + 'px';
+
+  requestAnimationFrame(frame);
+}
+
+/* ── IDLE ── */
+function tickIdle(dt) {
+  const dx  = mx - dogX, dy = my - dogY;
+  const d   = Math.hypot(dx, dy);
+  if (d > 72) { dogX += dx * 0.065; dogY += dy * 0.065; }
+
+  if (detectCircle()) { enterMode('spin'); return; }
+
+  facingLeft = mx < dogX;
+  const breathScale = 1 + Math.sin(breathT * 1.55) * 0.018;
+  applyTransform({ scaleY: breathScale });
+}
+
+/* ── RUN ── */
+function tickRun(dt) {
+  const dx = runTX - dogX, dy = runTY - dogY;
+  if (Math.hypot(dx, dy) < 28) pickRunTarget();
+  dogX += dx * 0.20; dogY += dy * 0.20;
+
+  facingLeft    = dx < 0;
+  const ph      = modeT * 9;
+  const bounceY = -(Math.abs(Math.sin(ph)) * 14);
+  const scaleY  = 1 + Math.abs(Math.sin(ph)) * 0.12;
+  applyTransform({ bounceY, scaleY });
+
+  if (modeT > 3.6) { enterMode('idle'); applyTransform({}); }
+}
+
+/* ── BELLY (발라당) ── */
+function tickBelly(dt) {
+  dogX += (mx - dogX) * 0.015;
+  dogY += (my - dogY) * 0.015;
+  const wiggle = Math.sin(modeT * 7) * 8;
+  applyTransform({ rotation: 88 + wiggle, overrideX: 0.88, scaleY: 0.88 });
+}
+
+/* ── SPIN ── */
+function tickSpin(dt) {
+  spinAngle += dt * 540;
+  applyTransform({ rotation: spinAngle });
+  if (modeT > 1.5) {
+    angleHist = []; prevAngle = null;
+    enterMode('idle');
+    applyTransform({});
+  }
+}
+
+requestAnimationFrame(frame);
+
+
+/* ════════════════════════════════════════════════════════════════════
+   CAMERA TOGGLE
+   ════════════════════════════════════════════════════════════════════ */
+const camWrap   = document.getElementById('cam-wrap');
+const camToggle = document.getElementById('cam-toggle');
+camToggle.addEventListener('click', () => {
+  const hidden = camWrap.style.display === 'none';
+  camWrap.style.display = hidden ? '' : 'none';
+});
+
+
+/* ════════════════════════════════════════════════════════════════════
+   MEDIAPIPE — FACE EXPRESSION → MUSTARD COLOUR
+   ════════════════════════════════════════════════════════════════════ */
+async function initFace() {
+  let fl;
+  try {
+    const fsr = await FilesetResolver.forVisionTasks(
+      "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+    );
+    fl = await FaceLandmarker.createFromOptions(fsr, {
+      baseOptions: {
+        modelAssetPath:
+          "https://storage.googleapis.com/mediapipe-models/face_landmarker/" +
+          "face_landmarker/float16/1/face_landmarker.task",
+        delegate: "GPU",
+      },
+      outputFaceBlendshapes: true,
+      runningMode: "VIDEO",
+      numFaces: 1,
+    });
+  } catch (err) {
+    console.warn("[face] init failed:", err);
+    camWrap.style.display = camToggle.style.display = 'none';
+    return;
+  }
+
+  const video = document.getElementById('webcam');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 320, height: 240, facingMode: 'user' },
+    });
+    video.srcObject = stream;
+    await new Promise(r => video.addEventListener('loadeddata', r, { once: true }));
+  } catch (err) {
+    console.warn("[face] camera denied:", err);
+    camWrap.style.display = camToggle.style.display = 'none';
+    return;
+  }
+
+  let lastVideoT = -1, tick = 0;
+  function detect() {
+    tick++;
+    if (tick % 6 === 0 && video.currentTime !== lastVideoT) {
+      lastVideoT = video.currentTime;
+      const res  = fl.detectForVideo(video, performance.now());
+      if (res.faceBlendshapes?.[0]) {
+        const emo = classify(res.faceBlendshapes[0].categories);
+        if (emo !== currentEmotion) {
+          applyTheme(emo);
+          if (mode === 'run') setGlow(true);
+        }
+      }
+    }
+    requestAnimationFrame(detect);
+  }
+  requestAnimationFrame(detect);
+}
+
+function classify(cats) {
+  const g = n => cats.find(c => c.categoryName === n)?.score ?? 0;
+  const happy     = (g('mouthSmileLeft') + g('mouthSmileRight')) * .50
+                  + (g('cheekSquintLeft') + g('cheekSquintRight')) * .25;
+  const angry     = (g('browDownLeft') + g('browDownRight')) * .55
+                  + (g('mouthPressLeft') + g('mouthPressRight')) * .45;
+  const disgusted = (g('noseSneerLeft') + g('noseSneerRight')) * .65
+                  + g('mouthShrugLower') * .35;
+  const surprised = g('jawOpen') * .55
+                  + (g('eyeWideLeft') + g('eyeWideRight')) * .45;
+  const sad       = g('browInnerUp') * .40
+                  + (g('mouthFrownLeft') + g('mouthFrownRight')) * .60;
+  const scores = { happy, angry, disgusted, surprised, sad };
+  const [top, score] = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
+  return score > 0.30 ? top : 'default';
+}
+
+initFace();
+
+
+/* ════════════════════════════════════════════════════════════════════
+   PIXEL CHAT BOX
+   ════════════════════════════════════════════════════════════════════ */
+const chatInput    = document.getElementById('chat-input');
+const chatSend     = document.getElementById('chat-send');
+const chatMessages = document.getElementById('chat-messages');
+
+chatInput.addEventListener('mousedown', e => e.stopPropagation());
+chatInput.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+
+const DOG_REPLIES = {
+  dog:     ["Woof woof! I'm already a dog!", "Arf! Still a hotdog!"],
+  cat:     ["Mrow...? Still smells like mustard.", "Meow? Nope still a dog."],
+  fox:     ["What does the fox say? Still woof.", "Sausage fox activated!"],
+  rabbit:  ["Hippity hop! I'm a sausage bunny.", "My legs are too short!"],
+  bear:    ["ROAR WOOF ROAR! Beardog!"],
+  dragon:  ["*breathes mustard* woof.", "Dragsausage!"],
+  wolf:    ["AWOOO-woof! Sausage wolf!"],
+  hamster: ["Tiny hotdog hamster... woof."],
+  lion:    ["King of the hotdogs!"],
+  hotdog:  ["That's me!! Woof!", "I AM the hotdog!!"],
+  default: [
+    "Woof! I tried to be that!",
+    "Interesting choice! *wags tail*",
+    "I don't know that animal but I'm trying!",
+    "Woof woof! Transform!",
+    "My mustard is wagging with excitement!",
+  ],
+};
+
+function getDogReply(animal) {
+  const key = animal.toLowerCase().trim();
+  for (const [k, replies] of Object.entries(DOG_REPLIES)) {
+    if (key.includes(k)) return replies[Math.floor(Math.random() * replies.length)];
+  }
+  const fb = DOG_REPLIES.default;
+  return fb[Math.floor(Math.random() * fb.length)];
+}
+
+function addMessage(text, who) {
+  chatMessages.querySelectorAll('.blink').forEach(el => el.remove());
+  const div = document.createElement('div');
+  div.className = `msg ${who}`;
+  if (who === 'dog') {
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    const blink = document.createElement('span');
+    blink.className = 'blink';
+    let i = 0;
+    const type = () => {
+      if (i < text.length) { div.textContent += text[i++]; div.appendChild(blink); setTimeout(type, 42); }
+    };
+    type();
+  } else {
+    div.textContent = '> ' + text;
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+}
+
+function handleSend() {
+  const raw = chatInput.value.trim();
+  if (!raw) return;
+  addMessage(raw, 'user');
+  chatInput.value = '';
+  if (mode === 'idle') enterMode('run');
+  setTimeout(() => addMessage(getDogReply(raw), 'dog'), 380);
+}
+
+chatSend.addEventListener('click', handleSend);
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSend(); });
+</script>
+
+</body>
+</html>
