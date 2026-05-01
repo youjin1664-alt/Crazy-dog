@@ -155,6 +155,27 @@
       color: rgba(0,0,0,0.15); letter-spacing: 0.06em;
       pointer-events: none; white-space: nowrap;
     }
+
+    /* ── MONKEY ── */
+    #monkey-wrap {
+      position: fixed; z-index: 205;
+      transform: translate(-50%,-50%);
+      cursor: pointer; pointer-events: auto;
+      will-change: left, top;
+    }
+    #monkey-svg {
+      width: 72px; height: 103px; display: block;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.20));
+      will-change: transform, filter;
+      transform-origin: center center;
+    }
+    .monkey-label {
+      margin-top: 4px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 5px; color: rgba(0,0,0,0.28);
+      text-align: center; letter-spacing: 0.04em;
+      pointer-events: none; white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -228,6 +249,73 @@
           stroke="url(#gMust)" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"
           opacity="0.30" filter="url(#fBloom)"/>
   </svg>
+</div>
+
+<!-- ── MONKEY ── -->
+<div id="monkey-wrap">
+  <svg id="monkey-svg" viewBox="0 0 80 115" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="fMBloom" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="4" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <!-- Shadow -->
+    <ellipse cx="40" cy="112" rx="21" ry="5" fill="rgba(0,0,0,0.13)"/>
+    <!-- Legs -->
+    <ellipse cx="31" cy="97" rx="8.5" ry="13" fill="#8B5A2B" transform="rotate(-10 31 97)"/>
+    <ellipse cx="49" cy="97" rx="8.5" ry="13" fill="#8B5A2B" transform="rotate(10 49 97)"/>
+    <!-- Feet -->
+    <ellipse cx="27" cy="108" rx="12" ry="6.5" fill="#7A4E24" transform="rotate(-8 27 108)"/>
+    <ellipse cx="53" cy="108" rx="12" ry="6.5" fill="#7A4E24" transform="rotate(8 53 108)"/>
+    <!-- Yellow shorts -->
+    <rect x="21" y="76" width="38" height="26" rx="10" fill="#FFD600"/>
+    <ellipse cx="40" cy="76" rx="19" ry="8" fill="#FFE030"/>
+    <ellipse cx="40" cy="102" rx="17" ry="6.5" fill="#ECC000"/>
+    <line x1="40" y1="79" x2="40" y2="100" stroke="#ECC000" stroke-width="1.5"/>
+    <!-- Torso -->
+    <ellipse cx="40" cy="64" rx="16.5" ry="20" fill="#8B5A2B"/>
+    <!-- Left arm -->
+    <ellipse cx="18" cy="66" rx="7" ry="14.5" fill="#8B5A2B" transform="rotate(-18 18 66)"/>
+    <ellipse cx="11" cy="78" rx="10" ry="7" fill="#C49A6C"/>
+    <!-- Right arm -->
+    <ellipse cx="62" cy="66" rx="7" ry="14.5" fill="#8B5A2B" transform="rotate(18 62 66)"/>
+    <ellipse cx="69" cy="78" rx="10" ry="7" fill="#C49A6C"/>
+    <!-- Head brown -->
+    <circle cx="40" cy="34" r="26" fill="#8B5A2B"/>
+    <!-- Ears -->
+    <circle cx="13" cy="34" r="11" fill="#8B5A2B"/>
+    <circle cx="13" cy="34" r="7"  fill="#C49A6C"/>
+    <circle cx="67" cy="34" r="11" fill="#8B5A2B"/>
+    <circle cx="67" cy="34" r="7"  fill="#C49A6C"/>
+    <!-- Face cream -->
+    <ellipse cx="40" cy="40" rx="19" ry="21" fill="#C49A6C"/>
+    <!-- Eyes (large bulging) -->
+    <circle cx="30" cy="31" r="11.5" fill="white"/>
+    <circle cx="50" cy="31" r="11.5" fill="white"/>
+    <circle cx="30" cy="31" r="6.5"  fill="#111"/>
+    <circle cx="50" cy="31" r="6.5"  fill="#111"/>
+    <circle cx="27.5" cy="28" r="2.8" fill="white"/>
+    <circle cx="47.5" cy="28" r="2.8" fill="white"/>
+    <!-- Mouth wide open -->
+    <ellipse cx="40" cy="47" rx="13.5" ry="11" fill="#1a0800"/>
+    <ellipse cx="40" cy="49" rx="11"   ry="9"  fill="#cc1800"/>
+    <rect x="33"  y="47" width="5.5" height="4.5" rx="1.5" fill="rgba(255,255,255,0.92)"/>
+    <rect x="41.5" y="47" width="5.5" height="4.5" rx="1.5" fill="rgba(255,255,255,0.92)"/>
+    <!-- Helmet -->
+    <rect x="15" y="16" width="50" height="16" rx="9" fill="#E8E8E8"/>
+    <ellipse cx="40" cy="16" rx="25" ry="10" fill="#ECECEC"/>
+    <rect x="13" y="28" width="54" height="7"  rx="3.5" fill="#D0D0D0"/>
+    <ellipse cx="27" cy="14" rx="8" ry="3.5" fill="rgba(255,255,255,0.50)"/>
+    <path d="M 16 25 Q 40 29 64 25" stroke="rgba(0,0,0,0.07)" stroke-width="1.5" fill="none"/>
+    <!-- Siren dome -->
+    <ellipse cx="40" cy="9"  rx="9"  ry="7"   fill="#CC0000"/>
+    <ellipse cx="40" cy="5"  rx="6"  ry="5"   fill="#FF3333"/>
+    <ellipse cx="37.5" cy="3.5" rx="2" ry="1.5" fill="rgba(255,210,210,0.80)"/>
+    <!-- Siren glow (JS-animated) -->
+    <circle id="mk-siren-glow" cx="40" cy="6" r="18" fill="rgba(255,40,0,0)" opacity="0" filter="url(#fMBloom)"/>
+  </svg>
+  <div class="monkey-label">MONKEY</div>
 </div>
 
 <!-- ── CONDIMENT PANEL ── -->
@@ -418,7 +506,7 @@ function setGlow(on){
     :`drop-shadow(0 8px 20px rgba(140,70,20,0.20))`;
 }
 function enterMode(m){
-  if(mode===m) return;
+  if(mode===m && m!=='stunned') return;
   mode=m; modeT=0; shakeOffsetX=0; poopDropped=false; sneezeCount=0;
   if(m==='run'||m==='dislike_react'||m==='poop_run'){ if(m==='run')pickRunTarget(); setGlow(true); }
   else setGlow(false);
@@ -487,7 +575,7 @@ function frame(ts){
   prevTS=ts; modeT+=dt; breathT+=dt;
 
   // Stretch
-  const canStretch=pressed&&!['belly','spin','happy_react','dislike_react','poop_squat','sneeze'].includes(mode);
+  const canStretch=pressed&&!['belly','spin','happy_react','dislike_react','poop_squat','sneeze','stunned'].includes(mode);
   if(canStretch){
     const h=(performance.now()-pressT)/1000;
     if(h>0.18) stretchX=Math.min(1+(h-0.18)*STRETCH_RATE,STRETCH_MAX);
@@ -505,6 +593,8 @@ function frame(ts){
   if(mode==='poop_run')      tickPoopRun(dt);
   if(mode==='poop_squat')    tickPoopSquat(dt);
   if(mode==='sneeze')        tickSneeze(dt);
+  if(mode==='stunned')       tickStunned(dt);
+  tickMonkey(dt);
 
   dogWrap.style.left=(dogX+shakeOffsetX)+'px';
   dogWrap.style.top=dogY+'px';
@@ -638,6 +728,16 @@ function tickSneeze(dt){
   }
 
   if(modeT>1.6){ shakeOffsetX=0; enterMode('idle'); applyTransform({}); applyTheme('default'); }
+}
+
+/* ── STUNNED (monkey bonk) ── */
+function tickStunned(dt){
+  dogX+=(mx-dogX)*0.01; dogY+=(my-dogY)*0.01;
+  applyTransform({
+    scaleY: 1-Math.sin(modeT*12)*0.16,
+    rotation: Math.sin(modeT*16)*6
+  });
+  if(modeT>1.5){ enterMode('idle'); applyTransform({}); }
 }
 
 requestAnimationFrame(frame);
@@ -846,6 +946,128 @@ document.addEventListener('touchend',()=>{
 },{passive:true});
 
 /* ════════════════════════════════════════════════════════════════════
+   MONKEY SYSTEM
+   ════════════════════════════════════════════════════════════════════ */
+const monkeyWrap = document.getElementById('monkey-wrap');
+const monkeySvg  = document.getElementById('monkey-svg');
+let monkeyX = 0, monkeyY = 0;
+const mkHomeX = () => innerWidth - 130;
+const mkHomeY = () => innerHeight / 2;
+let monkeyMode = 'idle';  // idle | spinning | chasing | hitting | returning
+let mkT = 0, sirenT = 0;
+let mkFacing = -1;   // -1 = face left, 1 = face right
+let mkHitDone = false, mkSpinAngle = 0;
+
+monkeyX = mkHomeX(); monkeyY = mkHomeY();
+monkeyWrap.style.left = monkeyX+'px';
+monkeyWrap.style.top  = monkeyY+'px';
+
+function enterMonkeyMode(m){
+  monkeyMode=m; mkT=0; mkHitDone=false; mkSpinAngle=0;
+}
+
+function hitDog(){
+  if(['belly','stunned'].includes(mode)) return;
+  enterMode('stunned');
+  burstAt(dogX, dogY-20, '#FFEE00', 10, 6);
+  burstAt(dogX, dogY-20, '#FF8800', 8,  4);
+  // Star ring around dog head
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2;
+    particles.push(new Particle(
+      dogX+Math.cos(a)*38, dogY-12+Math.sin(a)*22,
+      Math.cos(a+Math.PI/2)*1.8, Math.sin(a+Math.PI/2)*1.8-1.2,
+      `hsl(${42+Math.random()*28},100%,55%)`, 6+Math.random()*3
+    ));
+  }
+  // BONK text DOM element
+  const bonk=document.createElement('div');
+  bonk.textContent='BONK!';
+  bonk.style.cssText=`position:fixed;left:${dogX-36}px;top:${dogY-72}px;`+
+    `font-family:'Press Start 2P',monospace;font-size:20px;color:#FF5500;`+
+    `text-shadow:2px 2px 0 #FFE000,-2px -2px 0 #FFE000;z-index:400;`+
+    `pointer-events:none;transition:transform 0.55s ease-out,opacity 0.55s ease-out;`;
+  document.body.appendChild(bonk);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    bonk.style.transform='translateY(-28px) scale(1.25)';
+    bonk.style.opacity='0';
+  }));
+  setTimeout(()=>bonk.remove(), 650);
+}
+
+function tickMonkey(dt){
+  mkT+=dt; sirenT+=dt;
+
+  const chasing=['spinning','chasing','hitting'].includes(monkeyMode);
+  monkeyWrap.style.pointerEvents=monkeyMode==='idle'?'auto':'none';
+
+  // Siren flash
+  const sg=document.getElementById('mk-siren-glow');
+  if(sg){
+    const sa=chasing?(Math.sin(sirenT*9)*0.5+0.5)*0.65:0;
+    sg.setAttribute('opacity', sa.toFixed(3));
+    sg.setAttribute('fill', `rgba(255,40,0,${sa.toFixed(3)})`);
+    monkeySvg.style.filter=chasing
+      ?`drop-shadow(0 0 ${(sa*18).toFixed(1)}px rgba(255,60,0,${(sa*0.7).toFixed(2)})) drop-shadow(0 6px 16px rgba(0,0,0,0.20))`
+      :`drop-shadow(0 6px 16px rgba(0,0,0,0.20))`;
+  }
+
+  switch(monkeyMode){
+    case 'idle':{
+      monkeyX=mkHomeX(); monkeyY=mkHomeY()+Math.sin(mkT*1.6)*3;
+      mkFacing=-1;
+      monkeySvg.style.transform=`scaleX(-1)`;
+      break;
+    }
+    case 'spinning':{
+      mkSpinAngle+=dt*820;
+      monkeySvg.style.transform=`scaleX(-1) rotate(${mkSpinAngle}deg)`;
+      if(mkT>0.9) enterMonkeyMode('chasing');
+      break;
+    }
+    case 'chasing':{
+      const dx=dogX-monkeyX, dy=dogY-monkeyY, dist=Math.hypot(dx,dy);
+      mkFacing=dx>=0?1:-1;
+      if(dist>58){ monkeyX+=dx*0.14; monkeyY+=dy*0.14; }
+      else { enterMonkeyMode('hitting'); break; }
+      const bY=-(Math.abs(Math.sin(mkT*11))*14);
+      monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
+      break;
+    }
+    case 'hitting':{
+      const prog=Math.min(mkT/0.55,1);
+      const lunge=Math.sin(prog*Math.PI)*(mkFacing>0?32:-32);
+      const bY=-Math.sin(prog*Math.PI)*12;
+      monkeySvg.style.transform=`scaleX(${mkFacing}) rotate(${lunge}deg) translateY(${bY}px)`;
+      if(!mkHitDone&&mkT>0.22){ mkHitDone=true; hitDog(); }
+      if(mkT>0.78) enterMonkeyMode('returning');
+      break;
+    }
+    case 'returning':{
+      const dx=mkHomeX()-monkeyX, dy=mkHomeY()-monkeyY;
+      monkeyX+=dx*0.10; monkeyY+=dy*0.10;
+      mkFacing=dx>=0?1:-1;
+      const bY=-(Math.abs(Math.sin(mkT*9))*8);
+      monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
+      if(Math.hypot(dx,dy)<5){ monkeyX=mkHomeX(); monkeyY=mkHomeY(); enterMonkeyMode('idle'); }
+      break;
+    }
+  }
+  monkeyWrap.style.left=monkeyX+'px';
+  monkeyWrap.style.top=monkeyY+'px';
+}
+
+monkeyWrap.addEventListener('click',e=>{
+  e.stopPropagation();
+  if(monkeyMode==='idle') enterMonkeyMode('spinning');
+});
+monkeyWrap.addEventListener('mousedown',e=>e.stopPropagation());
+monkeyWrap.addEventListener('touchstart',e=>{
+  e.stopPropagation();
+  if(monkeyMode==='idle') enterMonkeyMode('spinning');
+},{passive:true});
+
+/* ════════════════════════════════════════════════════════════════════
    CAMERA TOGGLE
    ════════════════════════════════════════════════════════════════════ */
 const camWrap=document.getElementById('cam-wrap');
@@ -885,7 +1107,7 @@ async function initFace(){
       const res=fl.detectForVideo(video,performance.now());
       if(res.faceBlendshapes?.[0]){
         const emo=classify(res.faceBlendshapes[0].categories);
-        const reacting=['happy_react','dislike_react','poop_run','poop_squat','sneeze'].includes(mode);
+        const reacting=['happy_react','dislike_react','poop_run','poop_squat','sneeze','stunned'].includes(mode);
         if(emo!==currentEmotion&&!reacting){ applyTheme(emo); if(mode==='run')setGlow(true); }
       }
     }
