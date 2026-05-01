@@ -8,163 +8,137 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: #ffffff;
-      cursor: none;
-      user-select: none;
+      width: 100vw; height: 100vh;
+      overflow: hidden; background: #fff;
+      cursor: none; user-select: none;
     }
 
     #cursor-dot {
-      position: fixed;
-      width: 9px;
-      height: 9px;
-      background: rgba(180, 110, 40, 0.45);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
+      position: fixed; width: 9px; height: 9px;
+      background: rgba(180,110,40,0.45);
+      border-radius: 50%; pointer-events: none;
+      z-index: 9999; transform: translate(-50%,-50%);
     }
 
-    /* ── DOG WRAP ─────────────────────────────────────────────────── */
+    /* ── DOG ── */
     #dog-wrap {
-      position: fixed;
-      pointer-events: none;
-      z-index: 100;
-      transform: translate(-50%, -50%);
-      will-change: left, top;
+      position: fixed; pointer-events: none; z-index: 100;
+      transform: translate(-50%,-50%); will-change: left, top;
     }
-
     #dog-svg {
-      /* natural size — JS will scaleX this for stretch */
-      width: 220px;
-      height: 136px;
-      display: block;
-      filter: drop-shadow(0 8px 20px rgba(140, 70, 20, 0.20));
+      width: 220px; height: 136px; display: block;
+      filter: drop-shadow(0 8px 20px rgba(140,70,20,0.20));
       will-change: transform, filter;
       transform-origin: center center;
     }
 
-    /* ── WEBCAM ───────────────────────────────────────────────────── */
+    /* ── CANVAS ── */
+    #particle-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 150;
+    }
+
+    /* ── CONDIMENT PANEL ── */
+    #condiment-panel {
+      position: fixed; right: 22px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 250;
+      display: flex; flex-direction: column;
+      gap: 10px; align-items: center;
+      max-height: 96vh; overflow-y: auto;
+      scrollbar-width: none; padding: 4px 0;
+    }
+    #condiment-panel::-webkit-scrollbar { display: none; }
+
+    .bottle-wrap {
+      cursor: grab; flex-shrink: 0;
+      transform-origin: 50% 10%;
+      transition: transform 0.28s cubic-bezier(.34,1.56,.64,1),
+                  filter   0.20s ease;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.14));
+      -webkit-user-drag: none;
+    }
+    .bottle-wrap:hover {
+      transform: scale(1.13);
+      filter: drop-shadow(0 5px 14px rgba(0,0,0,0.22));
+    }
+    .bottle-wrap.pouring {
+      transform: rotate(138deg) scale(1.06); cursor: grabbing;
+    }
+    .bottle-label {
+      margin-top: 4px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 5px; color: rgba(0,0,0,0.28);
+      text-align: center; letter-spacing: 0.04em;
+      pointer-events: none;
+    }
+
+    /* ── WEBCAM ── */
     #cam-wrap {
-      position: fixed;
-      bottom: 22px;
-      right: 22px;
-      z-index: 200;
-      border-radius: 14px;
-      overflow: hidden;
+      position: fixed; bottom: 22px; right: 22px;
+      z-index: 200; border-radius: 14px; overflow: hidden;
       box-shadow: 0 2px 20px rgba(0,0,0,0.09);
-      background: #111;
-      opacity: 0.72;
-      transition: opacity 0.2s;
+      background: #111; opacity: 0.72; transition: opacity 0.2s;
     }
     #cam-wrap:hover { opacity: 1; }
-    #webcam {
-      display: block;
-      width: 144px;
-      height: 108px;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
+    #webcam { display: block; width: 144px; height: 108px; object-fit: cover; transform: scaleX(-1); }
     #emotion-tag {
-      position: absolute;
-      inset: auto 0 0;
-      text-align: center;
-      padding: 4px 0 5px;
+      position: absolute; inset: auto 0 0;
+      text-align: center; padding: 4px 0 5px;
       font: 10px/1 system-ui, sans-serif;
       color: rgba(255,255,255,0.82);
       background: rgba(0,0,0,0.28);
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
+      letter-spacing: 0.07em; text-transform: uppercase;
     }
     #cam-toggle {
-      position: fixed;
-      bottom: 22px;
-      right: 178px;
-      z-index: 201;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: none;
+      position: fixed; bottom: 22px; right: 178px;
+      z-index: 201; width: 28px; height: 28px;
+      border-radius: 50%; border: none;
       background: rgba(160,90,30,0.12);
       color: rgba(120,70,20,0.55);
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       transition: background 0.2s;
     }
     #cam-toggle:hover { background: rgba(160,90,30,0.22); }
 
-    /* ── PIXEL DIALOG BOX ─────────────────────────────────────────── */
+    /* ── PIXEL DIALOG ── */
     #dialog-box {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
+      position: fixed; bottom: 24px; left: 50%;
       transform: translateX(-50%);
-      width: min(560px, calc(100vw - 32px));
+      width: min(540px, calc(100vw - 120px));
       z-index: 300;
       font-family: 'Press Start 2P', monospace;
     }
     .pixel-panel {
-      background: #fff;
-      border: 4px solid #4a90d9;
-      border-radius: 16px;
-      box-shadow:
-        0 0 0 2px #fff,
-        0 0 0 5px #4a90d9,
-        4px 6px 0 4px rgba(0,0,0,0.10);
+      background: #fff; border: 4px solid #4a90d9; border-radius: 16px;
+      box-shadow: 0 0 0 2px #fff, 0 0 0 5px #4a90d9, 4px 6px 0 4px rgba(0,0,0,0.10);
       padding: 14px 16px 12px;
     }
     #chat-messages {
-      min-height: 44px;
-      max-height: 88px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      scrollbar-width: none;
+      min-height: 44px; max-height: 80px; overflow-y: auto;
+      margin-bottom: 10px; display: flex; flex-direction: column;
+      gap: 6px; scrollbar-width: none;
     }
     #chat-messages::-webkit-scrollbar { display: none; }
     .msg { font-size: 8px; line-height: 1.8; color: #222; animation: msgIn .15s ease; }
     .msg.dog  { color: #b06020; }
     .msg.user { color: #2563eb; }
-    @keyframes msgIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes msgIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
     #chat-row { display: flex; align-items: center; gap: 8px; }
     #chat-input {
-      flex: 1;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      padding: 8px 10px;
-      border: 3px solid #4a90d9;
-      border-radius: 8px;
-      outline: none;
-      background: #f0f8ff;
-      color: #222;
-      caret-color: #b06020;
+      flex: 1; font-family: 'Press Start 2P', monospace; font-size: 8px;
+      padding: 8px 10px; border: 3px solid #4a90d9; border-radius: 8px;
+      outline: none; background: #f0f8ff; color: #222; caret-color: #b06020;
     }
     #chat-input::placeholder { color: #aac4e8; }
     #chat-input:focus { border-color: #b06020; background: #fff; }
     #chat-send {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
-      padding: 8px 10px;
-      background: #4a90d9;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 3px 0 #2563aa;
-      transition: background .15s;
-      white-space: nowrap;
+      font-family: 'Press Start 2P', monospace; font-size: 7px;
+      padding: 8px 10px; background: #4a90d9; color: #fff;
+      border: none; border-radius: 8px; cursor: pointer;
+      box-shadow: 0 3px 0 #2563aa; transition: background .15s; white-space: nowrap;
     }
     #chat-send:hover  { background: #3b82f6; }
     #chat-send:active { transform: translateY(2px); box-shadow: none; }
@@ -175,149 +149,192 @@
     }
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* hold hint */
     #hold-hint {
-      position: fixed;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
-      color: rgba(0,0,0,0.18);
-      letter-spacing: 0.06em;
-      pointer-events: none;
-      white-space: nowrap;
-      transition: opacity .3s;
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      font-family: 'Press Start 2P', monospace; font-size: 6px;
+      color: rgba(0,0,0,0.15); letter-spacing: 0.06em;
+      pointer-events: none; white-space: nowrap;
     }
   </style>
 </head>
 <body>
 
 <div id="cursor-dot"></div>
+<canvas id="particle-canvas"></canvas>
 
-<!-- ── HOTDOG DOG SVG ─────────────────────────────────────────────── -->
+<!-- ── HOTDOG DOG ── -->
 <div id="dog-wrap">
   <svg id="dog-svg" viewBox="0 0 280 170" xmlns="http://www.w3.org/2000/svg">
     <defs>
-
-      <!-- BUN: warm cream, lit from top -->
       <radialGradient id="gBun" cx="50%" cy="28%" r="65%">
         <stop offset="0%"   stop-color="#faefd0"/>
         <stop offset="50%"  stop-color="#eed8a0"/>
         <stop offset="100%" stop-color="#c8a055"/>
       </radialGradient>
-
-      <!-- BUN ENDS (slightly richer tone for the rounded end caps) -->
       <radialGradient id="gBunEnd" cx="48%" cy="30%" r="62%">
         <stop offset="0%"   stop-color="#f5e5b5"/>
         <stop offset="55%"  stop-color="#ddc07a"/>
         <stop offset="100%" stop-color="#b88a40"/>
       </radialGradient>
-
-      <!-- SAUSAGE body -->
       <radialGradient id="gSaus" cx="50%" cy="28%" r="68%">
         <stop offset="0%"   stop-color="#d06838"/>
         <stop offset="38%"  stop-color="#963820"/>
         <stop offset="78%"  stop-color="#621f0c"/>
         <stop offset="100%" stop-color="#3e1005"/>
       </radialGradient>
-
-      <!-- MUSTARD — stops controlled by emotion theme -->
       <linearGradient id="gMust" x1="0%" y1="0%" x2="0%" y2="100%">
         <stop id="m1" offset="0%"   stop-color="#f5d840"/>
         <stop id="m2" offset="100%" stop-color="#c8a010"/>
       </linearGradient>
-
-      <!-- SPECULAR highlight -->
       <radialGradient id="gSpec" cx="30%" cy="22%" r="55%">
         <stop offset="0%"   stop-color="rgba(255,255,255,0.70)"/>
         <stop offset="60%"  stop-color="rgba(255,255,255,0.15)"/>
         <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
       </radialGradient>
-
-      <!-- BLOOM (soft edge glow) -->
-      <filter id="fBloom" x="-22%" y="-22%" width="144%" height="144%" color-interpolation-filters="sRGB">
+      <filter id="fBloom" x="-22%" y="-22%" width="144%" height="144%">
         <feGaussianBlur stdDeviation="5" result="b"/>
         <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
-
     </defs>
-
-    <!-- SHADOW -->
     <ellipse cx="140" cy="163" rx="95" ry="8" fill="rgba(100,50,10,0.13)"/>
-
-    <!-- ── BUN BODY (the large cream rounded slab) ─── -->
     <rect x="12" y="62" width="256" height="86" rx="43" fill="url(#gBun)"/>
-    <!-- Bun underside darker rim -->
     <rect x="14" y="104" width="252" height="44" rx="35" fill="#d4aa65"/>
-    <!-- Bun bottom highlight -->
-    <ellipse cx="140" cy="148" rx="100" ry="10" fill="rgba(255,240,180,0.25)"/>
-
-    <!-- ── SAUSAGE (sits inside the bun split) ─── -->
-    <rect x="9" y="72" width="262" height="68" rx="30" fill="url(#gSaus)"/>
-    <!-- Sausage top specular streak -->
+    <rect x="9"  y="72"  width="262" height="68" rx="30" fill="url(#gSaus)"/>
     <ellipse cx="130" cy="78" rx="72" ry="10" fill="url(#gSpec)"/>
-    <!-- Sausage bloom edge (softness) -->
-    <rect x="9" y="72" width="262" height="68" rx="30" fill="url(#gSaus)" opacity="0.22" filter="url(#fBloom)"/>
-
-    <!-- ── BUN LEFT CAP (covers the left end of sausage) ─── -->
-    <ellipse cx="34" cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
-    <!-- Left cap specular -->
-    <ellipse cx="26" cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
-
-    <!-- ── BUN RIGHT CAP ─── -->
+    <rect x="9"  y="72"  width="262" height="68" rx="30" fill="url(#gSaus)" opacity="0.22" filter="url(#fBloom)"/>
+    <ellipse cx="34"  cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
+    <ellipse cx="26"  cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
     <ellipse cx="246" cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
-    <!-- Right cap specular -->
     <ellipse cx="238" cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
-
-    <!-- ── LEGS (peeking below bun) ─── -->
-    <!-- Back pair (behind) -->
     <rect x="68"  y="130" width="22" height="36" rx="11" fill="#4e1a08" opacity="0.80"/>
     <rect x="170" y="130" width="22" height="36" rx="11" fill="#4e1a08" opacity="0.80"/>
-    <!-- Front pair -->
     <rect x="92"  y="133" width="22" height="33" rx="11" fill="#5c2010"/>
     <rect x="146" y="133" width="22" height="33" rx="11" fill="#5c2010"/>
-
-    <!-- ── DOG FACE (left end of sausage) ─── -->
-
-    <!-- Left floppy ear -->
     <ellipse cx="22" cy="96" rx="14" ry="20" fill="#4e1a08" transform="rotate(-12,22,96)"/>
     <ellipse cx="22" cy="96" rx="14" ry="20" fill="#4e1a08" transform="rotate(-12,22,96)" opacity="0.3" filter="url(#fBloom)"/>
-
-    <!-- Muzzle patch (lighter area on sausage front face) -->
     <ellipse cx="52" cy="107" rx="22" ry="18" fill="rgba(200,100,55,0.40)"/>
-
-    <!-- Eyes -->
     <circle cx="42" cy="95"  r="7"   fill="#1a0804"/>
     <circle cx="62" cy="93"  r="7"   fill="#1a0804"/>
     <circle cx="42" cy="95"  r="4"   fill="#0d0402"/>
     <circle cx="62" cy="93"  r="4"   fill="#0d0402"/>
-    <!-- Eye shine -->
     <circle cx="44.5" cy="92.5" r="2.5" fill="rgba(255,255,255,0.75)"/>
     <circle cx="64.5" cy="90.5" r="2.5" fill="rgba(255,255,255,0.75)"/>
-
-    <!-- Nose -->
     <ellipse cx="52" cy="108" rx="7" ry="5.5" fill="#1a0804"/>
     <ellipse cx="51" cy="106.5" rx="2.2" ry="1.6" fill="rgba(255,255,255,0.35)"/>
-
-    <!-- Mouth -->
-    <path d="M 44 116 Q 52 123 60 116"
-          stroke="#1a0804" stroke-width="2.8" fill="none" stroke-linecap="round"/>
-
-    <!-- ── MUSTARD SQUIGGLE (across exposed sausage top) ─── -->
-    <path id="mustard-path"
-          d="M 72 68 C 82 54, 100 78, 118 64 C 136 50, 154 74, 172 60 C 188 47, 205 70, 218 58"
-          stroke="url(#gMust)" stroke-width="13" fill="none"
-          stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Mustard bloom -->
-    <path d="M 72 68 C 82 54, 100 78, 118 64 C 136 50, 154 74, 172 60 C 188 47, 205 70, 218 58"
-          stroke="url(#gMust)" stroke-width="13" fill="none"
-          stroke-linecap="round" stroke-linejoin="round"
+    <path d="M 44 116 Q 52 123 60 116" stroke="#1a0804" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M 72 68 C 82 54,100 78,118 64 C 136 50,154 74,172 60 C 188 47,205 70,218 58"
+          stroke="url(#gMust)" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 72 68 C 82 54,100 78,118 64 C 136 50,154 74,172 60 C 188 47,205 70,218 58"
+          stroke="url(#gMust)" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"
           opacity="0.30" filter="url(#fBloom)"/>
-
   </svg>
 </div>
-<!-- ───────────────────────────────────────────────────────────────── -->
+
+<!-- ── CONDIMENT PANEL ── -->
+<div id="condiment-panel">
+
+  <!-- KETCHUP -->
+  <div class="bottle-wrap" id="btn-ketchup" data-cond="ketchup">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gK" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#ff6666"/><stop offset="50%" stop-color="#dd1818"/><stop offset="100%" stop-color="#990a0a"/>
+      </radialGradient></defs>
+      <ellipse cx="27" cy="6"  rx="5.5" ry="6" fill="#d8d8d8"/>
+      <ellipse cx="27" cy="3"  rx="3.5" ry="3" fill="#f0f0f0"/>
+      <rect x="20" y="10" width="14" height="14" rx="5" fill="#c81010"/>
+      <rect x="5"  y="22" width="44" height="58" rx="20" fill="url(#gK)"/>
+      <rect x="7"  y="36" width="40" height="26" rx="5" fill="rgba(255,255,255,0.90)"/>
+      <text x="27" y="47" text-anchor="middle" font-size="5.8" fill="#cc0000" font-family="system-ui" font-weight="bold">KETCHUP</text>
+      <text x="27" y="57" text-anchor="middle" font-size="4.2" fill="#e04040" font-family="system-ui">squeeze</text>
+      <ellipse cx="14" cy="42" rx="4.5" ry="16" fill="rgba(255,255,255,0.28)"/>
+      <rect x="5"  y="75" width="44" height="5" rx="2.5" fill="#aa0808"/>
+    </svg>
+    <div class="bottle-label">KETCHUP</div>
+  </div>
+
+  <!-- MUSTARD -->
+  <div class="bottle-wrap" id="btn-mustard" data-cond="mustard">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gMB" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#ffe060"/><stop offset="50%" stop-color="#e8c000"/><stop offset="100%" stop-color="#a07800"/>
+      </radialGradient></defs>
+      <ellipse cx="27" cy="6"  rx="5.5" ry="6" fill="#d09800"/>
+      <ellipse cx="27" cy="3"  rx="3.5" ry="3" fill="#e8b800"/>
+      <rect x="20" y="10" width="14" height="14" rx="5" fill="#c8a000"/>
+      <rect x="5"  y="22" width="44" height="58" rx="20" fill="url(#gMB)"/>
+      <rect x="7"  y="36" width="40" height="26" rx="5" fill="rgba(255,255,255,0.90)"/>
+      <text x="27" y="47" text-anchor="middle" font-size="5.8" fill="#8a6800" font-family="system-ui" font-weight="bold">MUSTARD</text>
+      <text x="27" y="57" text-anchor="middle" font-size="4.2" fill="#a07800" font-family="system-ui">squeeze</text>
+      <ellipse cx="14" cy="42" rx="4.5" ry="16" fill="rgba(255,255,255,0.28)"/>
+      <rect x="5"  y="75" width="44" height="5" rx="2.5" fill="#a08000"/>
+    </svg>
+    <div class="bottle-label">MUSTARD</div>
+  </div>
+
+  <!-- WASABI -->
+  <div class="bottle-wrap" id="btn-wasabi" data-cond="wasabi">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gW" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#90e040"/><stop offset="50%" stop-color="#50a818"/><stop offset="100%" stop-color="#2a6008"/>
+      </radialGradient></defs>
+      <rect x="22" y="2" width="10" height="12" rx="5" fill="#3a7a10"/>
+      <ellipse cx="27" cy="2" rx="4" ry="3" fill="#4a9a18"/>
+      <rect x="18" y="12" width="18" height="12" rx="5" fill="#3a8818"/>
+      <rect x="5"  y="22" width="44" height="58" rx="14" fill="url(#gW)"/>
+      <ellipse cx="14" cy="40" rx="4.5" ry="16" fill="rgba(255,255,255,0.22)"/>
+      <rect x="7"  y="36" width="40" height="26" rx="5" fill="rgba(255,255,255,0.88)"/>
+      <text x="27" y="47" text-anchor="middle" font-size="5.8" fill="#2a6808" font-family="system-ui" font-weight="bold">WASABI</text>
+      <text x="27" y="57" text-anchor="middle" font-size="4.2" fill="#4a8828" font-family="system-ui">squeeze</text>
+      <!-- Crimped tube bottom -->
+      <rect x="10" y="72" width="34" height="7" rx="3.5" fill="#3a7010"/>
+      <rect x="15" y="73" width="24" height="5" rx="2.5" fill="#2a5808"/>
+    </svg>
+    <div class="bottle-label">WASABI</div>
+  </div>
+
+  <!-- SOY SAUCE -->
+  <div class="bottle-wrap" id="btn-soy" data-cond="soy">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gS" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#5a3010"/><stop offset="50%" stop-color="#2a1208"/><stop offset="100%" stop-color="#120800"/>
+      </radialGradient></defs>
+      <ellipse cx="27" cy="7"  rx="7"   ry="7"   fill="#1a0a00"/>
+      <ellipse cx="27" cy="4"  rx="4.5" ry="4.5" fill="#2a1400"/>
+      <rect x="20" y="12" width="14" height="12" rx="5" fill="#180e00"/>
+      <rect x="5"  y="22" width="44" height="58" rx="20" fill="url(#gS)"/>
+      <ellipse cx="14" cy="40" rx="4"   ry="15"  fill="rgba(110,60,20,0.35)"/>
+      <rect x="7"  y="34" width="40" height="26" rx="5" fill="rgba(255,220,140,0.90)"/>
+      <text x="27" y="44" text-anchor="middle" font-size="5.8" fill="#1a0800" font-family="system-ui" font-weight="bold">SOY</text>
+      <text x="27" y="55" text-anchor="middle" font-size="5.2" fill="#2a1000" font-family="system-ui" font-weight="bold">SAUCE</text>
+      <rect x="5"  y="75" width="44" height="5" rx="2.5" fill="#100800"/>
+    </svg>
+    <div class="bottle-label">SOY SAUCE</div>
+  </div>
+
+  <!-- PEPPER -->
+  <div class="bottle-wrap" id="btn-pepper" data-cond="pepper">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gP" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#666"/><stop offset="50%" stop-color="#333"/><stop offset="100%" stop-color="#111"/>
+      </radialGradient></defs>
+      <!-- Shaker cap with holes -->
+      <ellipse cx="27" cy="9" rx="11" ry="10" fill="#444"/>
+      <circle cx="23" cy="7"  r="1.8" fill="#222"/>
+      <circle cx="27" cy="5"  r="1.8" fill="#222"/>
+      <circle cx="31" cy="7"  r="1.8" fill="#222"/>
+      <circle cx="25" cy="11" r="1.8" fill="#222"/>
+      <circle cx="29" cy="11" r="1.8" fill="#222"/>
+      <rect x="5"  y="17" width="44" height="62" rx="18" fill="url(#gP)"/>
+      <ellipse cx="14" cy="38" rx="4.5" ry="16" fill="rgba(255,255,255,0.14)"/>
+      <rect x="7"  y="34" width="40" height="24" rx="5" fill="rgba(255,255,255,0.88)"/>
+      <text x="27" y="44" text-anchor="middle" font-size="5.2" fill="#222" font-family="system-ui" font-weight="bold">PEPPER</text>
+      <text x="27" y="53" text-anchor="middle" font-size="4" fill="#444" font-family="system-ui">grind</text>
+      <rect x="5"  y="74" width="44" height="5" rx="2.5" fill="#1a1a1a"/>
+    </svg>
+    <div class="bottle-label">PEPPER</div>
+  </div>
+
+</div>
 
 <div id="hold-hint">hold to stretch · tap · stroke · circle</div>
 
@@ -344,454 +361,593 @@
 import { FaceLandmarker, FilesetResolver }
   from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
 
-
 /* ════════════════════════════════════════════════════════════════════
-   EMOTION → MUSTARD COLOUR THEMES
+   THEMES
    ════════════════════════════════════════════════════════════════════ */
 const THEMES = {
-  default:   { m1: '#f5d840', m2: '#c8a010', glowR: 220, glowG: 170, glowB:  10 },
-  happy:     { m1: '#ff9030', m2: '#e06000', glowR: 255, glowG: 140, glowB:   0 },
-  angry:     { m1: '#ff3a3a', m2: '#cc0000', glowR: 240, glowG:  40, glowB:  40 },
-  disgusted: { m1: '#7de040', m2: '#3da800', glowR:  80, glowG: 210, glowB:  30 },
-  surprised: { m1: '#60c8ff', m2: '#2080e0', glowR:  60, glowG: 170, glowB: 255 },
-  sad:       { m1: '#e0e8f4', m2: '#90a8c8', glowR: 160, glowG: 180, glowB: 220 },
+  default:   { m1:'#f5d840', m2:'#c8a010', glowR:220, glowG:170, glowB: 10 },
+  happy:     { m1:'#ff9030', m2:'#e06000', glowR:255, glowG:140, glowB:  0 },
+  angry:     { m1:'#ff3a3a', m2:'#cc0000', glowR:240, glowG: 40, glowB: 40 },
+  disgusted: { m1:'#7de040', m2:'#3da800', glowR: 80, glowG:210, glowB: 30 },
+  surprised: { m1:'#60c8ff', m2:'#2080e0', glowR: 60, glowG:170, glowB:255 },
+  sad:       { m1:'#e0e8f4', m2:'#90a8c8', glowR:160, glowG:180, glowB:220 },
 };
-
-let currentTheme   = THEMES.default;
-let currentEmotion = 'default';
+let currentTheme = THEMES.default, currentEmotion = 'default';
 
 function applyTheme(name) {
   const t = THEMES[name] || THEMES.default;
   document.getElementById('m1').setAttribute('stop-color', t.m1);
   document.getElementById('m2').setAttribute('stop-color', t.m2);
-  currentTheme   = t;
-  currentEmotion = name;
+  currentTheme = t; currentEmotion = name;
   document.getElementById('emotion-tag').textContent = name;
 }
-
 
 /* ════════════════════════════════════════════════════════════════════
    STATE
    ════════════════════════════════════════════════════════════════════ */
-let dogX = innerWidth  / 2;
-let dogY = innerHeight / 2;
-let mx   = innerWidth  / 2;
-let my   = innerHeight / 2;
-
-let mode    = 'idle';   // idle | run | belly | spin
-let modeT   = 0;
-let breathT = 0;
-
-let pressed    = false;
-let pressX     = 0;
-let pressY     = 0;
-let pressT     = 0;
-let strokeDist = 0;
-
+let dogX = innerWidth/2, dogY = innerHeight/2;
+let mx   = innerWidth/2, my   = innerHeight/2;
+let mode = 'idle', modeT = 0, breathT = 0;
+let pressed = false, pressX = 0, pressY = 0, pressT = 0, strokeDist = 0;
 let runTX = 0, runTY = 0;
+let prevAngle = null, angleHist = [], spinAngle = 0, facingLeft = false;
+let stretchX = 1.0;
+const STRETCH_MAX = 3.8, STRETCH_RATE = 2.2;
+let shakeOffsetX = 0;
+let poopDropped   = false;  // for poop_squat
+let sneezeCount   = 0;      // sneeze bursts fired
 
-let prevAngle = null;
-let angleHist = [];
-let spinAngle = 0;
-let facingLeft = false;
-
-// Stretch state
-let stretchX       = 1.0;   // current horizontal scale
-const STRETCH_MAX  = 3.8;
-const STRETCH_RATE = 2.2;   // units per second when holding
-
-/* ════════════════════════════════════════════════════════════════════
-   DOM REFS
-   ════════════════════════════════════════════════════════════════════ */
+/* DOM */
 const dogWrap   = document.getElementById('dog-wrap');
 const dogSvg    = document.getElementById('dog-svg');
 const cursorDot = document.getElementById('cursor-dot');
 
-
 /* ════════════════════════════════════════════════════════════════════
    HELPERS
    ════════════════════════════════════════════════════════════════════ */
-const DOG_HIT_W = 110;  // half-width of hotdog hit area
-const DOG_HIT_H =  55;  // half-height
-
-function isOnDog(x, y) {
-  return Math.abs(x - dogX) < DOG_HIT_W && Math.abs(y - dogY) < DOG_HIT_H;
+const DOG_HIT_W = 110, DOG_HIT_H = 55;
+function isOnDog(x,y){ return Math.abs(x-dogX)<DOG_HIT_W && Math.abs(y-dogY)<DOG_HIT_H; }
+function dv(ax,ay,bx,by){ return Math.hypot(ax-bx,ay-by); }
+function pickRunTarget(){
+  const p=120; runTX=p+Math.random()*(innerWidth-p*2); runTY=p+Math.random()*(innerHeight-p*2);
 }
-function dist(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
-
-function pickRunTarget() {
-  const pad = 120;
-  runTX = pad + Math.random() * (innerWidth  - pad * 2);
-  runTY = pad + Math.random() * (innerHeight - pad * 2);
+function setGlow(on){
+  const {glowR:r,glowG:g,glowB:b}=currentTheme;
+  dogSvg.style.filter=on
+    ?`drop-shadow(0 0 24px rgba(${r},${g},${b},0.92)) drop-shadow(0 0 50px rgba(${r},${g},${b},0.50))`
+    :`drop-shadow(0 8px 20px rgba(140,70,20,0.20))`;
 }
-
-function setGlow(on) {
-  const { glowR: r, glowG: g, glowB: b } = currentTheme;
-  dogSvg.style.filter = on
-    ? `drop-shadow(0 0 24px rgba(${r},${g},${b},0.92)) drop-shadow(0 0 50px rgba(${r},${g},${b},0.50))`
-    : `drop-shadow(0 8px 20px rgba(140,70,20,0.20))`;
+function enterMode(m){
+  if(mode===m) return;
+  mode=m; modeT=0; shakeOffsetX=0; poopDropped=false; sneezeCount=0;
+  if(m==='run'||m==='dislike_react'||m==='poop_run'){ if(m==='run')pickRunTarget(); setGlow(true); }
+  else setGlow(false);
+  if(m!=='spin') spinAngle=0;
 }
-
-function enterMode(m) {
-  if (mode === m) return;
-  mode  = m;
-  modeT = 0;
-  if (m === 'run') { pickRunTarget(); setGlow(true); }
-  else             { setGlow(false); }
-  if (m !== 'spin') spinAngle = 0;
+function applyTransform({bounceY=0,rotation=0,scaleY=1,overrideX=null}={}){
+  const fx=facingLeft?-1:1;
+  const sx=overrideX!==null?overrideX:fx*stretchX;
+  dogSvg.style.transform=`rotate(${rotation}deg) translateY(${bounceY}px) scale(${sx},${scaleY})`;
 }
-
-/* Build the final transform string (called by every tick) */
-function applyTransform(opts = {}) {
-  const {
-    bounceY  = 0,
-    rotation = 0,
-    scaleY   = 1,
-    overrideX = null,   // absolute scaleX (ignores stretchX & facing)
-  } = opts;
-
-  const fx = facingLeft ? -1 : 1;
-  const sx = overrideX !== null ? overrideX : fx * stretchX;
-
-  dogSvg.style.transform =
-    `rotate(${rotation}deg) translateY(${bounceY}px) scale(${sx}, ${scaleY})`;
-}
-
 
 /* ════════════════════════════════════════════════════════════════════
-   INPUT EVENTS
+   INPUT
    ════════════════════════════════════════════════════════════════════ */
-document.addEventListener('mousemove', e => {
-  mx = e.clientX;
-  my = e.clientY;
-  cursorDot.style.left = mx + 'px';
-  cursorDot.style.top  = my + 'px';
-
-  if (pressed && mode !== 'run') {
-    strokeDist = dist(mx, my, pressX, pressY);
-    if (strokeDist > 18 && isOnDog(mx, my)) enterMode('belly');
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  cursorDot.style.left=mx+'px'; cursorDot.style.top=my+'px';
+  if(pressed&&mode!=='run'){
+    strokeDist=dv(mx,my,pressX,pressY);
+    if(strokeDist>18&&isOnDog(mx,my)) enterMode('belly');
   }
 });
-
-document.addEventListener('mousedown', e => {
-  pressed    = true;
-  pressX     = e.clientX;
-  pressY     = e.clientY;
-  pressT     = performance.now();
-  strokeDist = 0;
+document.addEventListener('mousedown',e=>{ pressed=true; pressX=e.clientX; pressY=e.clientY; pressT=performance.now(); strokeDist=0; });
+document.addEventListener('mouseup',e=>{
+  if(!pressed)return;
+  const moved=dv(e.clientX,e.clientY,pressX,pressY), dur=performance.now()-pressT;
+  if(moved<14&&dur<320&&isOnDog(e.clientX,e.clientY)&&mode==='idle') enterMode('run');
+  pressed=false;
+  if(mode==='belly') setTimeout(()=>{ if(mode==='belly')enterMode('idle'); },1800);
 });
+document.addEventListener('touchstart',e=>{
+  const t=e.touches[0]; pressX=t.clientX; pressY=t.clientY; pressT=performance.now(); strokeDist=0; pressed=true;
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+  const t=e.touches[0]; mx=t.clientX; my=t.clientY;
+  if(pressed&&mode!=='run'){ strokeDist=dv(mx,my,pressX,pressY); if(strokeDist>18&&isOnDog(mx,my))enterMode('belly'); }
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  const ch=e.changedTouches[0];
+  const moved=dv(ch.clientX,ch.clientY,pressX,pressY), dur=performance.now()-pressT;
+  if(moved<14&&dur<320&&isOnDog(ch.clientX,ch.clientY)&&mode==='idle')enterMode('run');
+  pressed=false;
+  if(mode==='belly')setTimeout(()=>{ if(mode==='belly')enterMode('idle'); },1800);
+},{passive:true});
 
-document.addEventListener('mouseup', e => {
-  if (!pressed) return;
-  const moved    = dist(e.clientX, e.clientY, pressX, pressY);
-  const duration = performance.now() - pressT;
-  const onDog    = isOnDog(e.clientX, e.clientY);
-
-  if (moved < 14 && duration < 320 && onDog && mode === 'idle') {
-    enterMode('run');
+/* Circle detector */
+function detectCircle(){
+  const dx=mx-dogX, dy=my-dogY, dist=Math.hypot(dx,dy);
+  if(dist<70||dist>260){ angleHist=[]; prevAngle=null; return false; }
+  const angle=Math.atan2(dy,dx);
+  if(prevAngle!==null){
+    let d=angle-prevAngle;
+    if(d>Math.PI)d-=2*Math.PI; if(d<-Math.PI)d+=2*Math.PI;
+    angleHist.push(d); if(angleHist.length>44)angleHist.shift();
+    if(Math.abs(angleHist.reduce((a,b)=>a+b,0))>Math.PI*1.7)return true;
   }
-
-  pressed = false;
-
-  if (mode === 'belly') {
-    setTimeout(() => { if (mode === 'belly') enterMode('idle'); }, 1800);
-  }
-});
-
-/* Touch */
-document.addEventListener('touchstart', e => {
-  const t = e.touches[0];
-  pressX = t.clientX; pressY = t.clientY; pressT = performance.now();
-  strokeDist = 0; pressed = true;
-}, { passive: true });
-
-document.addEventListener('touchmove', e => {
-  const t = e.touches[0];
-  mx = t.clientX; my = t.clientY;
-  if (pressed && mode !== 'run') {
-    strokeDist = dist(mx, my, pressX, pressY);
-    if (strokeDist > 18 && isOnDog(mx, my)) enterMode('belly');
-  }
-}, { passive: true });
-
-document.addEventListener('touchend', e => {
-  const ch = e.changedTouches[0];
-  const moved    = dist(ch.clientX, ch.clientY, pressX, pressY);
-  const duration = performance.now() - pressT;
-  const onDog    = isOnDog(ch.clientX, ch.clientY);
-  if (moved < 14 && duration < 320 && onDog && mode === 'idle') enterMode('run');
-  pressed = false;
-  if (mode === 'belly') setTimeout(() => { if (mode === 'belly') enterMode('idle'); }, 1800);
-}, { passive: true });
-
-
-/* ════════════════════════════════════════════════════════════════════
-   CIRCULAR MOTION DETECTOR
-   ════════════════════════════════════════════════════════════════════ */
-function detectCircle() {
-  const dx = mx - dogX, dy = my - dogY;
-  const d  = Math.hypot(dx, dy);
-  if (d < 70 || d > 260) { angleHist = []; prevAngle = null; return false; }
-
-  const angle = Math.atan2(dy, dx);
-  if (prevAngle !== null) {
-    let delta = angle - prevAngle;
-    if (delta >  Math.PI) delta -= 2 * Math.PI;
-    if (delta < -Math.PI) delta += 2 * Math.PI;
-    angleHist.push(delta);
-    if (angleHist.length > 44) angleHist.shift();
-    if (Math.abs(angleHist.reduce((a, b) => a + b, 0)) > Math.PI * 1.7) return true;
-  }
-  prevAngle = angle;
-  return false;
+  prevAngle=angle; return false;
 }
-
 
 /* ════════════════════════════════════════════════════════════════════
    ANIMATION LOOP
    ════════════════════════════════════════════════════════════════════ */
-let prevTS = 0;
+let prevTS=0;
+function frame(ts){
+  const dt=Math.min((ts-prevTS)/1000,0.05);
+  prevTS=ts; modeT+=dt; breathT+=dt;
 
-function frame(ts) {
-  const dt = Math.min((ts - prevTS) / 1000, 0.05);
-  prevTS    = ts;
-  modeT    += dt;
-  breathT  += dt;
-
-  /* ── STRETCH logic ──────────────────────────────────────────────── */
-  if (pressed && mode !== 'belly' && mode !== 'spin') {
-    const holdSec = (performance.now() - pressT) / 1000;
-    if (holdSec > 0.18) {
-      stretchX = Math.min(1 + (holdSec - 0.18) * STRETCH_RATE, STRETCH_MAX);
-    }
+  // Stretch
+  const canStretch=pressed&&!['belly','spin','happy_react','dislike_react','poop_squat','sneeze'].includes(mode);
+  if(canStretch){
+    const h=(performance.now()-pressT)/1000;
+    if(h>0.18) stretchX=Math.min(1+(h-0.18)*STRETCH_RATE,STRETCH_MAX);
   } else {
-    // Spring back
-    stretchX += (1.0 - stretchX) * 0.10;
-    if (Math.abs(stretchX - 1.0) < 0.005) stretchX = 1.0;
+    stretchX+=(1.0-stretchX)*0.10;
+    if(Math.abs(stretchX-1.0)<0.005)stretchX=1.0;
   }
 
-  /* ── Mode tick ──────────────────────────────────────────────────── */
-  if (mode === 'idle')  tickIdle(dt);
-  if (mode === 'run')   tickRun(dt);
-  if (mode === 'belly') tickBelly(dt);
-  if (mode === 'spin')  tickSpin(dt);
+  if(mode==='idle')          tickIdle(dt);
+  if(mode==='run')           tickRun(dt);
+  if(mode==='belly')         tickBelly(dt);
+  if(mode==='spin')          tickSpin(dt);
+  if(mode==='happy_react')   tickHappyReact(dt);
+  if(mode==='dislike_react') tickDislikeReact(dt);
+  if(mode==='poop_run')      tickPoopRun(dt);
+  if(mode==='poop_squat')    tickPoopSquat(dt);
+  if(mode==='sneeze')        tickSneeze(dt);
 
-  dogWrap.style.left = dogX + 'px';
-  dogWrap.style.top  = dogY + 'px';
-
+  dogWrap.style.left=(dogX+shakeOffsetX)+'px';
+  dogWrap.style.top=dogY+'px';
   requestAnimationFrame(frame);
 }
 
-/* ── IDLE ── */
-function tickIdle(dt) {
-  const dx  = mx - dogX, dy = my - dogY;
-  const d   = Math.hypot(dx, dy);
-  if (d > 72) { dogX += dx * 0.065; dogY += dy * 0.065; }
-
-  if (detectCircle()) { enterMode('spin'); return; }
-
-  facingLeft = mx < dogX;
-  const breathScale = 1 + Math.sin(breathT * 1.55) * 0.018;
-  applyTransform({ scaleY: breathScale });
+function tickIdle(dt){
+  const dx=mx-dogX, dy=my-dogY;
+  if(Math.hypot(dx,dy)>72){ dogX+=dx*0.065; dogY+=dy*0.065; }
+  if(detectCircle()){ enterMode('spin'); return; }
+  facingLeft=mx<dogX;
+  const b=1+Math.sin(breathT*1.55)*0.018;
+  applyTransform({scaleY:b});
+}
+function tickRun(dt){
+  const dx=runTX-dogX, dy=runTY-dogY;
+  if(Math.hypot(dx,dy)<28)pickRunTarget();
+  dogX+=dx*0.20; dogY+=dy*0.20; facingLeft=dx<0;
+  const ph=modeT*9;
+  applyTransform({bounceY:-(Math.abs(Math.sin(ph))*14), scaleY:1+Math.abs(Math.sin(ph))*0.12});
+  if(modeT>3.6){ enterMode('idle'); applyTransform({}); }
+}
+function tickBelly(dt){
+  dogX+=(mx-dogX)*0.015; dogY+=(my-dogY)*0.015;
+  applyTransform({rotation:88+Math.sin(modeT*7)*8, overrideX:0.88, scaleY:0.88});
+}
+function tickSpin(dt){
+  spinAngle+=dt*540;
+  applyTransform({rotation:spinAngle});
+  if(modeT>1.5){ angleHist=[]; prevAngle=null; enterMode('idle'); applyTransform({}); }
+}
+function tickHappyReact(dt){
+  dogX+=(mx-dogX)*0.03; dogY+=(my-dogY)*0.03;
+  const ph=modeT*9;
+  applyTransform({bounceY:-(Math.abs(Math.sin(ph))*20), scaleY:1+Math.abs(Math.sin(ph))*0.14});
+  if(modeT>2.0){ enterMode('idle'); applyTheme('default'); }
+}
+function tickDislikeReact(dt){
+  dogX+=(mx-dogX)*0.03; dogY+=(my-dogY)*0.03;
+  const decay=Math.max(0,1-modeT/1.4);
+  shakeOffsetX=Math.sin(modeT*38)*10*decay;
+  applyTransform({rotation:Math.sin(modeT*32)*5*decay});
+  if(modeT>1.6){ shakeOffsetX=0; setGlow(false); enterMode('idle'); applyTheme('default'); }
 }
 
-/* ── RUN ── */
-function tickRun(dt) {
-  const dx = runTX - dogX, dy = runTY - dogY;
-  if (Math.hypot(dx, dy) < 28) pickRunTarget();
-  dogX += dx * 0.20; dogY += dy * 0.20;
+/* ── POOP RUN (wasabi) — runs frantically leaving green poop ── */
+function tickPoopRun(dt){
+  const dx=runTX-dogX, dy=runTY-dogY;
+  if(Math.hypot(dx,dy)<28)pickRunTarget();
+  dogX+=dx*0.24; dogY+=dy*0.24; facingLeft=dx<0;
+  const ph=modeT*11;
+  applyTransform({bounceY:-(Math.abs(Math.sin(ph))*16), scaleY:1+Math.abs(Math.sin(ph))*0.15});
 
-  facingLeft    = dx < 0;
-  const ph      = modeT * 9;
-  const bounceY = -(Math.abs(Math.sin(ph)) * 14);
-  const scaleY  = 1 + Math.abs(Math.sin(ph)) * 0.12;
-  applyTransform({ bounceY, scaleY });
-
-  if (modeT > 3.6) { enterMode('idle'); applyTransform({}); }
-}
-
-/* ── BELLY (발라당) ── */
-function tickBelly(dt) {
-  dogX += (mx - dogX) * 0.015;
-  dogY += (my - dogY) * 0.015;
-  const wiggle = Math.sin(modeT * 7) * 8;
-  applyTransform({ rotation: 88 + wiggle, overrideX: 0.88, scaleY: 0.88 });
-}
-
-/* ── SPIN ── */
-function tickSpin(dt) {
-  spinAngle += dt * 540;
-  applyTransform({ rotation: spinAngle });
-  if (modeT > 1.5) {
-    angleHist = []; prevAngle = null;
-    enterMode('idle');
-    applyTransform({});
+  // Drop poop every ~0.42 s
+  const interval=0.42;
+  if(Math.floor(modeT/interval)>Math.floor((modeT-dt)/interval)){
+    spawnPoop(
+      dogX + (facingLeft?1:-1)*50 + (Math.random()-0.5)*16,
+      dogY + 46 + (Math.random()-0.5)*8,
+      '#3d7a12'
+    );
   }
+  if(modeT>4.2){ enterMode('idle'); applyTransform({}); applyTheme('default'); }
+}
+
+/* ── POOP SQUAT (soy sauce) — squats and drops brown poop ── */
+function tickPoopSquat(dt){
+  dogX+=(mx-dogX)*0.02; dogY+=(my-dogY)*0.02;
+  if(modeT<0.55){
+    const t=modeT/0.55;
+    const sq=Math.sin(t*Math.PI)*0.28;
+    applyTransform({scaleY:1-sq, bounceY:sq*28, overrideX:(facingLeft?-1:1)*stretchX});
+  } else {
+    if(!poopDropped){
+      poopDropped=true;
+      spawnPoop(dogX+(facingLeft?30:-30), dogY+52, '#3d1e08');
+      spawnPoop(dogX+(facingLeft?45:-15)+(Math.random()-0.5)*14, dogY+50, '#2e1606');
+    }
+    const t=Math.min((modeT-0.55)/0.55,1);
+    const bounce=Math.sin(t*Math.PI)*0.12;
+    applyTransform({scaleY:1+bounce*0.5, bounceY:-bounce*14, overrideX:(facingLeft?-1:1)*stretchX});
+  }
+  if(modeT>1.8){ enterMode('idle'); applyTransform({}); applyTheme('default'); }
+}
+
+/* ── SNEEZE (pepper) — head bobs + spray particles ── */
+function tickSneeze(dt){
+  dogX+=(mx-dogX)*0.02; dogY+=(my-dogY)*0.02;
+  const decay=Math.max(0,1-modeT/1.3);
+  const phase=modeT*22;
+  const bob=Math.sin(phase)*14*decay;
+  const faceDir=facingLeft?1:-1;   // which way the face points
+  shakeOffsetX=bob*faceDir;
+
+  applyTransform({
+    scaleY: 1+Math.abs(Math.sin(phase))*0.08*decay,
+    overrideX: (facingLeft?-1:1)*stretchX
+  });
+
+  // Fire sneeze particle burst at each peak
+  const burstThresh=0.88;
+  const prevPhase=(modeT-dt)*22;
+  const peakNow = Math.sin(phase)>burstThresh;
+  const peakPrev= Math.sin(prevPhase)>burstThresh;
+  if(peakNow&&!peakPrev&&sneezeCount<5&&decay>0.15){
+    sneezeCount++;
+    const originX=dogX+faceDir*90;
+    const originY=dogY-8;
+    for(let i=0;i<10;i++){
+      const angle=(faceDir>0?0:Math.PI)+(Math.random()-0.5)*0.9;
+      const spd=5+Math.random()*5;
+      particles.push(new Particle(
+        originX+(Math.random()-0.5)*18,
+        originY+(Math.random()-0.5)*18,
+        Math.cos(angle)*spd, Math.sin(angle)*spd-1.5,
+        `rgba(${215+Math.floor(Math.random()*40)},${215+Math.floor(Math.random()*40)},${215+Math.floor(Math.random()*40)},0.85)`,
+        2+Math.random()*2.8
+      ));
+    }
+    // Tiny dark pepper specks
+    for(let i=0;i<5;i++){
+      const angle=(faceDir>0?0:Math.PI)+(Math.random()-0.5)*1.1;
+      const spd=3+Math.random()*3;
+      particles.push(new Particle(
+        originX+(Math.random()-0.5)*10,
+        originY+(Math.random()-0.5)*10,
+        Math.cos(angle)*spd, Math.sin(angle)*spd,
+        `rgba(30,20,10,0.80)`, 1.5+Math.random()*1.5
+      ));
+    }
+  }
+
+  if(modeT>1.6){ shakeOffsetX=0; enterMode('idle'); applyTransform({}); applyTheme('default'); }
 }
 
 requestAnimationFrame(frame);
 
+/* ════════════════════════════════════════════════════════════════════
+   PARTICLE + POOP SYSTEM
+   ════════════════════════════════════════════════════════════════════ */
+const pCanvas=document.getElementById('particle-canvas');
+const pCtx=pCanvas.getContext('2d');
+function resizeCanvas(){ pCanvas.width=innerWidth; pCanvas.height=innerHeight; }
+resizeCanvas(); window.addEventListener('resize',resizeCanvas);
+
+class Particle{
+  constructor(x,y,vx,vy,color,r){
+    this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.color=color;this.r=r;
+    this.life=1.0; this.decay=0.013+Math.random()*0.018;
+  }
+  update(){ this.x+=this.vx;this.y+=this.vy;this.vy+=0.28;this.vx*=0.97;this.life-=this.decay; }
+  draw(ctx){
+    ctx.save(); ctx.globalAlpha=Math.max(0,this.life*this.life);
+    ctx.fillStyle=this.color; ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r*Math.max(0.2,this.life),0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha*=0.45; ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.beginPath();
+    ctx.arc(this.x-this.r*.3,this.y-this.r*.35,this.r*.32,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  isDead(){ return this.life<=0; }
+}
+
+class Poop{
+  constructor(x,y,color){
+    this.x=x; this.y=y; this.color=color;
+    this.life=1.0; this.decay=0.0028;
+    this.size=9+Math.random()*4;
+    this.tilt=(Math.random()-0.5)*0.4;
+  }
+  update(){ this.life-=this.decay; }
+  draw(ctx){
+    const {x,y,size:s,color:c,tilt}=this;
+    ctx.save();
+    ctx.translate(x,y); ctx.rotate(tilt);
+    ctx.globalAlpha=Math.min(1,this.life*4);
+
+    // Shadow
+    ctx.fillStyle='rgba(0,0,0,0.12)';
+    ctx.beginPath(); ctx.ellipse(0, s*3.4, s*1.1, s*0.38, 0, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle=c;
+    // Bottom tier
+    ctx.beginPath(); ctx.ellipse(0, s*2.5, s*1.05, s*0.72, 0, 0, Math.PI*2); ctx.fill();
+    // Middle tier
+    ctx.beginPath(); ctx.ellipse(s*0.1, s*1.3, s*0.82, s*0.60, 0, 0, Math.PI*2); ctx.fill();
+    // Upper tier
+    ctx.beginPath(); ctx.ellipse(0, s*0.3, s*0.60, s*0.50, 0, 0, Math.PI*2); ctx.fill();
+    // Tip swirl
+    ctx.beginPath(); ctx.ellipse(s*0.05, -s*0.5, s*0.35, s*0.42, 0.15, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(s*0.0, -s*1.1, s*0.18, s*0.22, 0, 0, Math.PI*2); ctx.fill();
+
+    // Shine
+    const shimmer=c==='#3d7a12'?'rgba(180,255,100,0.22)':'rgba(180,100,40,0.18)';
+    ctx.fillStyle=shimmer;
+    ctx.beginPath(); ctx.ellipse(-s*0.4, s*2.0, s*0.28, s*0.16, -0.5, 0, Math.PI*2); ctx.fill();
+
+    // Tiny eyes
+    ctx.fillStyle='rgba(0,0,0,0.55)';
+    ctx.beginPath(); ctx.arc(-s*0.28, s*2.38, s*0.14, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc( s*0.28, s*2.38, s*0.14, 0, Math.PI*2); ctx.fill();
+
+    ctx.restore();
+  }
+  isDead(){ return this.life<=0; }
+}
+
+let particles=[], poops=[];
+
+function burstAt(x,y,color,count,speed=4){
+  for(let i=0;i<count;i++){
+    const angle=(i/count)*Math.PI*2+Math.random()*0.5;
+    const spd=speed*(0.6+Math.random()*0.8);
+    particles.push(new Particle(
+      x+(Math.random()-.5)*20, y+(Math.random()-.5)*14,
+      Math.cos(angle)*spd, Math.sin(angle)*spd-1.5,
+      color, 3.5+Math.random()*3
+    ));
+  }
+}
+
+function spawnPoop(x,y,color){
+  poops.push(new Poop(x,y,color));
+}
+
+function renderLoop(){
+  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  poops=poops.filter(p=>!p.isDead());
+  for(const p of poops){ p.update(); p.draw(pCtx); }
+  particles=particles.filter(p=>!p.isDead());
+  for(const p of particles){ p.update(); p.draw(pCtx); }
+  requestAnimationFrame(renderLoop);
+}
+requestAnimationFrame(renderLoop);
+
+/* ════════════════════════════════════════════════════════════════════
+   CONDIMENT SYSTEM
+   ════════════════════════════════════════════════════════════════════ */
+let activeCondiment=null, reactionFired=false, lastReactionTime=0, sprayTick=0;
+
+const CONDIMENT_COLORS={
+  ketchup: ()=>`hsl(${353+Math.random()*10},88%,${44+Math.random()*14}%)`,
+  mustard: ()=>`hsl(${48 +Math.random()*10},94%,${52+Math.random()*12}%)`,
+  wasabi:  ()=>`hsl(${110+Math.random()*15},80%,${40+Math.random()*14}%)`,
+  soy:     ()=>`hsl(${22 +Math.random()*10},70%,${18+Math.random()*10}%)`,
+  pepper:  ()=>`hsl(${0  +Math.random()*10}, 0%,${25+Math.random()*20}%)`,
+};
+
+function getBottleTip(el){
+  const r=el.getBoundingClientRect();
+  return {x:r.left+r.width/2, y:r.top+8};
+}
+
+function emitSpray(condiment,btnEl){
+  const tip=getBottleTip(btnEl);
+  const dx=mx-tip.x, dy=my-tip.y, len=Math.hypot(dx,dy)||1;
+  const nx=dx/len, ny=dy/len, speed=5+Math.random()*3;
+  for(let i=0;i<4;i++){
+    particles.push(new Particle(
+      tip.x+(Math.random()-.5)*10, tip.y+(Math.random()-.5)*5,
+      nx*speed*(0.8+Math.random()*0.4)+(Math.random()-.5)*2.5,
+      ny*speed*(0.8+Math.random()*0.4)-Math.random(),
+      CONDIMENT_COLORS[condiment](), 3+Math.random()*2.5
+    ));
+  }
+}
+
+function triggerReaction(cond){
+  if(reactionFired)return;
+  reactionFired=true; activeCondiment=null;
+  document.querySelectorAll('.bottle-wrap').forEach(b=>b.classList.remove('pouring'));
+
+  switch(cond){
+    case 'ketchup':
+      applyTheme('happy'); enterMode('happy_react');
+      burstAt(dogX,dogY,'#ff5060',12,5);
+      burstAt(dogX,dogY,'#ff9090',8,3.5);
+      break;
+    case 'mustard':
+      applyTheme('angry'); enterMode('dislike_react');
+      burstAt(dogX,dogY,'#f5d840',14,5);
+      burstAt(dogX,dogY,'#ffee80',8,3);
+      break;
+    case 'wasabi':
+      applyTheme('disgusted'); enterMode('poop_run');
+      pickRunTarget();
+      burstAt(dogX,dogY,'#70e030',10,4);
+      break;
+    case 'soy':
+      applyTheme('sad'); enterMode('poop_squat');
+      burstAt(dogX,dogY,'#5a3010',8,3);
+      break;
+    case 'pepper':
+      applyTheme('surprised'); enterMode('sneeze');
+      burstAt(dogX,dogY,'rgba(200,200,200,0.8)',8,3);
+      break;
+  }
+}
+
+function condimentLoop(){
+  if(activeCondiment){
+    sprayTick++;
+    const btn=document.getElementById('btn-'+activeCondiment);
+    if(sprayTick%2===0&&btn) emitSpray(activeCondiment,btn);
+    if(!reactionFired&&isOnDog(mx,my)) triggerReaction(activeCondiment);
+  }
+  requestAnimationFrame(condimentLoop);
+}
+requestAnimationFrame(condimentLoop);
+
+document.querySelectorAll('.bottle-wrap').forEach(btn=>{
+  const cond=btn.dataset.cond;
+
+  btn.addEventListener('mousedown',e=>{
+    e.stopPropagation();
+    if(performance.now()-lastReactionTime<1800)return;
+    activeCondiment=cond; reactionFired=false;
+    btn.classList.add('pouring');
+  });
+  btn.addEventListener('touchstart',e=>{
+    e.stopPropagation();
+    if(performance.now()-lastReactionTime<1800)return;
+    activeCondiment=cond; reactionFired=false;
+    btn.classList.add('pouring');
+    const t=e.touches[0]; mx=t.clientX; my=t.clientY;
+  },{passive:true});
+});
+
+document.addEventListener('mouseup',()=>{
+  if(activeCondiment){
+    document.querySelectorAll('.bottle-wrap').forEach(b=>b.classList.remove('pouring'));
+    activeCondiment=null; lastReactionTime=performance.now();
+  }
+});
+document.addEventListener('touchend',()=>{
+  if(activeCondiment){
+    document.querySelectorAll('.bottle-wrap').forEach(b=>b.classList.remove('pouring'));
+    activeCondiment=null; lastReactionTime=performance.now();
+  }
+},{passive:true});
 
 /* ════════════════════════════════════════════════════════════════════
    CAMERA TOGGLE
    ════════════════════════════════════════════════════════════════════ */
-const camWrap   = document.getElementById('cam-wrap');
-const camToggle = document.getElementById('cam-toggle');
-camToggle.addEventListener('click', () => {
-  const hidden = camWrap.style.display === 'none';
-  camWrap.style.display = hidden ? '' : 'none';
+const camWrap=document.getElementById('cam-wrap');
+document.getElementById('cam-toggle').addEventListener('click',()=>{
+  camWrap.style.display=camWrap.style.display==='none'?'':'none';
 });
 
-
 /* ════════════════════════════════════════════════════════════════════
-   MEDIAPIPE — FACE EXPRESSION → MUSTARD COLOUR
+   MEDIAPIPE
    ════════════════════════════════════════════════════════════════════ */
-async function initFace() {
+async function initFace(){
   let fl;
-  try {
-    const fsr = await FilesetResolver.forVisionTasks(
+  try{
+    const fsr=await FilesetResolver.forVisionTasks(
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
     );
-    fl = await FaceLandmarker.createFromOptions(fsr, {
-      baseOptions: {
-        modelAssetPath:
-          "https://storage.googleapis.com/mediapipe-models/face_landmarker/" +
-          "face_landmarker/float16/1/face_landmarker.task",
-        delegate: "GPU",
+    fl=await FaceLandmarker.createFromOptions(fsr,{
+      baseOptions:{
+        modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+        delegate:"GPU"
       },
-      outputFaceBlendshapes: true,
-      runningMode: "VIDEO",
-      numFaces: 1,
+      outputFaceBlendshapes:true, runningMode:"VIDEO", numFaces:1
     });
-  } catch (err) {
-    console.warn("[face] init failed:", err);
-    camWrap.style.display = camToggle.style.display = 'none';
-    return;
-  }
+  }catch(e){ console.warn("[face]",e); camWrap.style.display='none'; return; }
 
-  const video = document.getElementById('webcam');
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 320, height: 240, facingMode: 'user' },
-    });
-    video.srcObject = stream;
-    await new Promise(r => video.addEventListener('loadeddata', r, { once: true }));
-  } catch (err) {
-    console.warn("[face] camera denied:", err);
-    camWrap.style.display = camToggle.style.display = 'none';
-    return;
-  }
+  const video=document.getElementById('webcam');
+  try{
+    video.srcObject=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'}});
+    await new Promise(r=>video.addEventListener('loadeddata',r,{once:true}));
+  }catch(e){ console.warn("[cam]",e); camWrap.style.display='none'; return; }
 
-  let lastVideoT = -1, tick = 0;
-  function detect() {
+  let lastT=-1,tick=0;
+  function detect(){
     tick++;
-    if (tick % 6 === 0 && video.currentTime !== lastVideoT) {
-      lastVideoT = video.currentTime;
-      const res  = fl.detectForVideo(video, performance.now());
-      if (res.faceBlendshapes?.[0]) {
-        const emo = classify(res.faceBlendshapes[0].categories);
-        if (emo !== currentEmotion) {
-          applyTheme(emo);
-          if (mode === 'run') setGlow(true);
-        }
+    if(tick%6===0&&video.currentTime!==lastT){
+      lastT=video.currentTime;
+      const res=fl.detectForVideo(video,performance.now());
+      if(res.faceBlendshapes?.[0]){
+        const emo=classify(res.faceBlendshapes[0].categories);
+        const reacting=['happy_react','dislike_react','poop_run','poop_squat','sneeze'].includes(mode);
+        if(emo!==currentEmotion&&!reacting){ applyTheme(emo); if(mode==='run')setGlow(true); }
       }
     }
     requestAnimationFrame(detect);
   }
   requestAnimationFrame(detect);
 }
-
-function classify(cats) {
-  const g = n => cats.find(c => c.categoryName === n)?.score ?? 0;
-  const happy     = (g('mouthSmileLeft') + g('mouthSmileRight')) * .50
-                  + (g('cheekSquintLeft') + g('cheekSquintRight')) * .25;
-  const angry     = (g('browDownLeft') + g('browDownRight')) * .55
-                  + (g('mouthPressLeft') + g('mouthPressRight')) * .45;
-  const disgusted = (g('noseSneerLeft') + g('noseSneerRight')) * .65
-                  + g('mouthShrugLower') * .35;
-  const surprised = g('jawOpen') * .55
-                  + (g('eyeWideLeft') + g('eyeWideRight')) * .45;
-  const sad       = g('browInnerUp') * .40
-                  + (g('mouthFrownLeft') + g('mouthFrownRight')) * .60;
-  const scores = { happy, angry, disgusted, surprised, sad };
-  const [top, score] = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
-  return score > 0.30 ? top : 'default';
+function classify(cats){
+  const g=n=>cats.find(c=>c.categoryName===n)?.score??0;
+  const happy    =(g('mouthSmileLeft')+g('mouthSmileRight'))*.50+(g('cheekSquintLeft')+g('cheekSquintRight'))*.25;
+  const angry    =(g('browDownLeft')+g('browDownRight'))*.55+(g('mouthPressLeft')+g('mouthPressRight'))*.45;
+  const disgusted=(g('noseSneerLeft')+g('noseSneerRight'))*.65+g('mouthShrugLower')*.35;
+  const surprised= g('jawOpen')*.55+(g('eyeWideLeft')+g('eyeWideRight'))*.45;
+  const sad      = g('browInnerUp')*.40+(g('mouthFrownLeft')+g('mouthFrownRight'))*.60;
+  const scores={happy,angry,disgusted,surprised,sad};
+  const [top,score]=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0];
+  return score>0.30?top:'default';
 }
-
 initFace();
-
 
 /* ════════════════════════════════════════════════════════════════════
    PIXEL CHAT BOX
    ════════════════════════════════════════════════════════════════════ */
-const chatInput    = document.getElementById('chat-input');
-const chatSend     = document.getElementById('chat-send');
-const chatMessages = document.getElementById('chat-messages');
+const chatInput=document.getElementById('chat-input');
+const chatSend=document.getElementById('chat-send');
+const chatMessages=document.getElementById('chat-messages');
+chatInput.addEventListener('mousedown',e=>e.stopPropagation());
+chatInput.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
 
-chatInput.addEventListener('mousedown', e => e.stopPropagation());
-chatInput.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
-
-const DOG_REPLIES = {
-  dog:     ["Woof woof! I'm already a dog!", "Arf! Still a hotdog!"],
-  cat:     ["Mrow...? Still smells like mustard.", "Meow? Nope still a dog."],
-  fox:     ["What does the fox say? Still woof.", "Sausage fox activated!"],
-  rabbit:  ["Hippity hop! I'm a sausage bunny.", "My legs are too short!"],
-  bear:    ["ROAR WOOF ROAR! Beardog!"],
-  dragon:  ["*breathes mustard* woof.", "Dragsausage!"],
-  wolf:    ["AWOOO-woof! Sausage wolf!"],
-  hamster: ["Tiny hotdog hamster... woof."],
-  lion:    ["King of the hotdogs!"],
-  hotdog:  ["That's me!! Woof!", "I AM the hotdog!!"],
-  default: [
-    "Woof! I tried to be that!",
-    "Interesting choice! *wags tail*",
-    "I don't know that animal but I'm trying!",
-    "Woof woof! Transform!",
-    "My mustard is wagging with excitement!",
-  ],
+const DOG_REPLIES={
+  dog:    ["Woof! Already a hotdog dog!","Arf! Still a dog!"],
+  cat:    ["Mrow? Still smells like mustard."],
+  fox:    ["What does the fox say? Still woof."],
+  rabbit: ["Hippity hop! Sausage bunny!"],
+  hotdog: ["That's me!! WOOF!","I AM the hotdog!!"],
+  default:["Woof! I tried to be that!","Interesting! *wags tail*","My mustard is wagging!","Woof woof! Transform!"],
 };
-
-function getDogReply(animal) {
-  const key = animal.toLowerCase().trim();
-  for (const [k, replies] of Object.entries(DOG_REPLIES)) {
-    if (key.includes(k)) return replies[Math.floor(Math.random() * replies.length)];
-  }
-  const fb = DOG_REPLIES.default;
-  return fb[Math.floor(Math.random() * fb.length)];
+function getDogReply(a){
+  const k=a.toLowerCase().trim();
+  for(const[key,r]of Object.entries(DOG_REPLIES)) if(k.includes(key)) return r[Math.floor(Math.random()*r.length)];
+  const f=DOG_REPLIES.default; return f[Math.floor(Math.random()*f.length)];
 }
-
-function addMessage(text, who) {
-  chatMessages.querySelectorAll('.blink').forEach(el => el.remove());
-  const div = document.createElement('div');
-  div.className = `msg ${who}`;
-  if (who === 'dog') {
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    const blink = document.createElement('span');
-    blink.className = 'blink';
-    let i = 0;
-    const type = () => {
-      if (i < text.length) { div.textContent += text[i++]; div.appendChild(blink); setTimeout(type, 42); }
-    };
+function addMessage(text,who){
+  chatMessages.querySelectorAll('.blink').forEach(e=>e.remove());
+  const div=document.createElement('div'); div.className=`msg ${who}`;
+  if(who==='dog'){
+    chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
+    const blink=document.createElement('span'); blink.className='blink';
+    let i=0; const type=()=>{ if(i<text.length){div.textContent+=text[i++];div.appendChild(blink);setTimeout(type,42);} };
     type();
   } else {
-    div.textContent = '> ' + text;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    div.textContent='> '+text; chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
   }
 }
-
-function handleSend() {
-  const raw = chatInput.value.trim();
-  if (!raw) return;
-  addMessage(raw, 'user');
-  chatInput.value = '';
-  if (mode === 'idle') enterMode('run');
-  setTimeout(() => addMessage(getDogReply(raw), 'dog'), 380);
+function handleSend(){
+  const raw=chatInput.value.trim(); if(!raw)return;
+  addMessage(raw,'user'); chatInput.value='';
+  if(mode==='idle')enterMode('run');
+  setTimeout(()=>addMessage(getDogReply(raw),'dog'),380);
 }
-
-chatSend.addEventListener('click', handleSend);
-chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSend(); });
+chatSend.addEventListener('click',handleSend);
+chatInput.addEventListener('keydown',e=>{ if(e.key==='Enter')handleSend(); });
 </script>
 
 </body>
