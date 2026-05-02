@@ -14,6 +14,18 @@
       cursor: none; user-select: none;
     }
 
+    #shield-bubble {
+      position: fixed; pointer-events: none; z-index: 149;
+      width: 140px; height: 90px; border-radius: 50%;
+      border: 3px solid rgba(80,200,255,0.9);
+      box-shadow: 0 0 22px 8px rgba(80,200,255,0.45), inset 0 0 20px rgba(80,200,255,0.18);
+      transform: translate(-50%,-50%);
+      animation: shieldPulse 0.7s ease-in-out infinite alternate;
+    }
+    @keyframes shieldPulse {
+      from { box-shadow: 0 0 16px 5px rgba(80,200,255,0.3), inset 0 0 14px rgba(80,200,255,0.1); }
+      to   { box-shadow: 0 0 32px 14px rgba(80,200,255,0.65), inset 0 0 28px rgba(80,200,255,0.28); }
+    }
     #cursor-dot {
       position: fixed; width: 9px; height: 9px;
       background: rgba(180,110,40,0.45);
@@ -452,6 +464,8 @@ let hand2X = innerWidth*0.75, hand2Y = innerHeight/2, hand2Detected = false;
 let cloneMode = false, cloneT = 0;
 let clones = [], cloneDivs = [];
 const CLONE_DURATION = 5;
+let shrinkMode = false, shrinkT = 0, shrinkScale = 1.0;
+let shieldActive = false, shieldEl = null, shieldT = 0;
 
 /* DOM */
 const dogWrap   = document.getElementById('dog-wrap');
@@ -484,7 +498,7 @@ function enterMode(m){
 function applyTransform({bounceY=0,rotation=0,scaleY=1,overrideX=null}={}){
   const fx=facingLeft?-1:1;
   const sx=overrideX!==null?overrideX:fx*stretchX;
-  dogSvg.style.transform=`rotate(${rotation}deg) translateY(${bounceY}px) scale(${sx},${scaleY})`;
+  dogSvg.style.transform=`rotate(${rotation}deg) translateY(${bounceY}px) scale(${sx*shrinkScale},${scaleY*shrinkScale})`;
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -495,8 +509,10 @@ function applyTransform({bounceY=0,rotation=0,scaleY=1,overrideX=null}={}){
 const keys={};
 document.addEventListener('keydown',e=>{
   keys[e.key]=true;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(e.key)) e.preventDefault();
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','r','t'].includes(e.key)) e.preventDefault();
   if(e.key==='n'&&!cloneMode) startClones();
+  if(e.key==='r'&&!shrinkMode) startShrink();
+  if(e.key==='t'&&!shieldActive) startShield();
 });
 document.addEventListener('keyup',e=>{ keys[e.key]=false; });
 
@@ -537,6 +553,9 @@ function frame(ts){
   if(mode==='stunned')       tickStunned(dt);
   tickMonkey(dt);
   tickClones(dt);
+  if(shrinkMode){ shrinkT+=dt; if(shrinkT>=5){ shrinkMode=false; shrinkScale=1.0; } }
+  if(shieldActive){ shieldT+=dt; if(shieldT>=4){ shieldActive=false; if(shieldEl){shieldEl.remove();shieldEl=null;} } }
+  if(shieldEl){ shieldEl.style.left=dogX+'px'; shieldEl.style.top=dogY+'px'; }
 
   dogWrap.style.left=(dogX+shakeOffsetX)+'px';
   dogWrap.style.top=dogY+'px';
@@ -912,6 +931,22 @@ function enterMonkeyMode(m){
 }
 
 function hitDog(){
+  if(shieldActive){
+    shieldActive=false;
+    if(shieldEl){ shieldEl.remove(); shieldEl=null; }
+    const block=document.createElement('div');
+    block.textContent='BLOCK!';
+    block.style.cssText=`position:fixed;left:${dogX-40}px;top:${dogY-72}px;`+
+      `font-family:'Press Start 2P',monospace;font-size:18px;color:#44DDFF;`+
+      `text-shadow:2px 2px 0 #0088CC,-2px -2px 0 #0088CC;z-index:400;`+
+      `pointer-events:none;transition:transform 0.5s ease-out,opacity 0.5s ease-out;`;
+    document.body.appendChild(block);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      block.style.transform='translateY(-28px) scale(1.2)'; block.style.opacity='0';
+    }));
+    setTimeout(()=>block.remove(),600);
+    return;
+  }
   if(['belly','stunned'].includes(mode)) return;
   enterMode('stunned');
   burstAt(dogX, dogY-20, '#FFEE00', 10, 6);
@@ -990,7 +1025,7 @@ function tickMonkey(dt){
       monkeyY=Math.max(0,Math.min(innerHeight,monkeyY));
       if(!keys['ArrowLeft']&&!keys['ArrowRight']) mkFacing=(dogX-monkeyX)>=0?1:-1;
       const ddx=dogX-monkeyX, ddy=dogY-monkeyY;
-      if(Math.hypot(ddx,ddy)<58){ enterMonkeyMode('hitting'); break; }
+      if(Math.hypot(ddx,ddy)<(shrinkMode?22:58)){ enterMonkeyMode('hitting'); break; }
       const bY=-(Math.abs(Math.sin(mkT*11))*14);
       monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
       break;
@@ -1018,48 +1053,77 @@ function tickMonkey(dt){
   monkeyWrap.style.top=monkeyY+'px';
 }
 
+function startShrink(){
+  shrinkMode=true; shrinkT=0; shrinkScale=1/3;
+}
+
+function startShield(){
+  shieldActive=true; shieldT=0;
+  shieldEl=document.createElement('div');
+  shieldEl.id='shield-bubble';
+  shieldEl.style.left=dogX+'px'; shieldEl.style.top=dogY+'px';
+  document.body.appendChild(shieldEl);
+}
+
 function startClones(){
   cloneMode=true; cloneT=0;
-  const spread=160;
-  const offsets=[{dx:-spread,dy:-spread},{dx:spread,dy:-spread},{dx:0,dy:spread}];
-  clones=offsets.map(({dx,dy})=>({
-    x:monkeyX+dx, y:monkeyY+dy,
-    facing:-1, hitting:false, hitT:0, hitDone:false
+  // 화면 세 귀퉁이에서 출발
+  const starts=[
+    {x:80,               y:80},
+    {x:innerWidth-80,    y:80},
+    {x:innerWidth/2,     y:innerHeight-80},
+  ];
+  clones=starts.map((p,i)=>({
+    x:p.x, y:p.y,
+    facing:-1, hitting:false, hitT:0, hitDone:false,
+    baseAngle:(i/3)*Math.PI*2   // 120° 간격으로 포위 각도 배정
   }));
   cloneDivs=clones.map(()=>{
     const el=monkeyWrap.cloneNode(true);
     el.removeAttribute('id');
+    el.style.position='fixed';
     el.style.pointerEvents='none';
-    el.style.opacity='0.85';
+    el.style.opacity='0.9';
+    el.style.filter='hue-rotate(140deg) brightness(1.2)';
     document.body.appendChild(el);
     return el;
   });
-  burstAt(monkeyX,monkeyY,'#FF4400',14,6);
+  burstAt(monkeyX,monkeyY,'#FF4400',18,7);
   if(monkeyMode!=='chasing') enterMonkeyMode('chasing');
 }
 
 function tickClones(dt){
   if(!cloneMode) return;
   cloneT+=dt;
+  const CLONE_SPD=420;
   for(let i=0;i<clones.length;i++){
     const c=clones[i], el=cloneDivs[i];
     const svg=el.querySelector('svg');
     if(c.hitting){
       c.hitT+=dt;
-      const prog=Math.min(c.hitT/0.55,1);
-      const lunge=Math.sin(prog*Math.PI)*(c.facing>0?32:-32);
+      const prog=Math.min(c.hitT/0.45,1);
+      const lunge=Math.sin(prog*Math.PI)*(c.facing>0?36:-36);
       const bY=-Math.sin(prog*Math.PI)*12;
       if(svg) svg.style.transform=`scaleX(${c.facing}) rotate(${lunge}deg) translateY(${bY}px)`;
-      if(!c.hitDone&&c.hitT>0.22){ c.hitDone=true; hitDog(); }
-      if(c.hitT>0.78){ c.hitting=false; c.hitT=0; c.hitDone=false; }
+      if(!c.hitDone&&c.hitT>0.18){ c.hitDone=true; hitDog(); }
+      if(c.hitT>0.65){ c.hitting=false; c.hitT=0; c.hitDone=false; }
     } else {
-      const dx=dogX-c.x, dy=dogY-c.y, dist=Math.hypot(dx,dy);
-      c.facing=dx>=0?1:-1;
-      if(dist>58){ c.x+=(dx/dist)*250*dt; c.y+=(dy/dist)*250*dt; }
+      // 포위 반경: 처음엔 넓게 벌렸다가 3초 이후 완전히 좁힘
+      const flankR=Math.max(0, 110*(1-cloneT/3));
+      const flankAngle=c.baseAngle+cloneT*1.4;
+      const targetX=dogX+Math.cos(flankAngle)*flankR;
+      const targetY=dogY+Math.sin(flankAngle)*flankR;
+      const dx=targetX-c.x, dy=targetY-c.y, dist=Math.hypot(dx,dy);
+      c.facing=(dogX-c.x)>=0?1:-1;
+      if(dist>(shrinkMode?20:52)){ c.x+=(dx/dist)*CLONE_SPD*dt; c.y+=(dy/dist)*CLONE_SPD*dt; }
       else { c.hitting=true; c.hitT=0; c.hitDone=false; }
-      const bY=-(Math.abs(Math.sin((cloneT+i*1.2)*11))*14);
+      // 빠른 달리기 바운스
+      const bY=-(Math.abs(Math.sin((cloneT*14)+i*2.1))*16);
       if(svg) svg.style.transform=`scaleX(${c.facing}) translateY(${bY}px)`;
     }
+    // 화면 안으로 clamp
+    c.x=Math.max(0,Math.min(innerWidth,c.x));
+    c.y=Math.max(0,Math.min(innerHeight,c.y));
     el.style.left=c.x+'px';
     el.style.top=c.y+'px';
   }
