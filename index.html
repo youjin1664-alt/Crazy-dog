@@ -2318,7 +2318,14 @@ async function initFace(){
       if(res.faceBlendshapes?.[0]){
         const emo=classify(res.faceBlendshapes[0].categories);
         const reacting=['happy_react','dislike_react','poop_run','poop_squat','sneeze','stunned'].includes(mode);
-        if(emo!==currentEmotion&&!reacting){ applyTheme(emo); if(mode==='run')setGlow(true); }
+        if(emo!==currentEmotion&&!reacting){ 
+          applyTheme(emo); 
+          if(mode==='run')setGlow(true); 
+          if(typeof gameStarted !== 'undefined' && gameStarted) {
+            const dSvg = document.getElementById('dog-svg');
+            if(dSvg) dSvg.innerHTML = getAvatarRects(emo);
+          }
+        }
       }
       if(handLandmarker){
         const hRes=handLandmarker.detectForVideo(video,performance.now());
@@ -2366,22 +2373,25 @@ initFace();
    PIXEL CHAT BOX
    ════════════════════════════════════════════════════════════════════ */
 
-function getAvatarSVG(emotion) {
+function getAvatarRects(emotion) {
   let style = 1;
-  if(emotion === 'happy' || emotion === 'surprised') style = 3;
-  else if(emotion === 'angry' || emotion === 'disgusted') style = 2;
+  if(emotion === 'happy') style = 3;
+  else if(emotion === 'angry') style = 2;
+  else if(emotion === 'surprised') style = 4;
+  else if(emotion === 'sad') style = 5;
+  else if(emotion === 'disgusted') style = 6;
 
-  function gridToSvg(g, p) {
+  function gridToRects(g, p) {
     let r='';
     for(let y=0;y<g.length;y++){
       for(let x=0;x<g[y].length;x++){
         if(g[y][x]!==' ' && p[g[y][x]]) r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${p[g[y][x]]}"/>`;
       }
     }
-    return `<svg id="dog-svg" viewBox="0 0 16 18" width="130" height="146" shape-rendering="crispEdges">${r}</svg>`;
+    return r;
   }
 
-  if(style === 1) { // Tank top, yellow glasses, short hair
+  if(style === 1) { // Default
     const grid = [
       "      HHHH      ",
       "     HHHHHH     ",
@@ -2399,8 +2409,8 @@ function getAvatarSVG(emotion) {
       "      J  J      ",
       "     DD  DD     "
     ];
-    return gridToSvg(grid, {'H':'#111','F':'#ffe2ad','W':'#fca311','M':'#1a0800','T':'#fff','A':'#ffe2ad','J':'#1d3557','D':'#222'});
-  } else if (style === 2) { // Red jacket, shades, headphones
+    return gridToRects(grid, {'H':'#111','F':'#ffe2ad','W':'#fca311','M':'#1a0800','T':'#fff','A':'#ffe2ad','J':'#1d3557','D':'#222'});
+  } else if (style === 2) { // Angry
     const grid = [
       "      HHHH      ",
       "   g HHHHHH g   ",
@@ -2418,14 +2428,14 @@ function getAvatarSVG(emotion) {
       "      B  B      ",
       "     Wb  bW     "
     ];
-    return gridToSvg(grid, {'H':'#111','F':'#ffe2ad','W':'#222','M':'#1a0800','R':'#cc1800','A':'#ffe2ad','B':'#111','g':'#7af04a','G':'#fff','b':'#1d3557'});
-  } else { // Bandana, camo
+    return gridToRects(grid, {'H':'#111','F':'#ffe2ad','W':'#222','M':'#1a0800','R':'#cc1800','A':'#ffe2ad','B':'#111','g':'#7af04a','G':'#fff','b':'#1d3557'});
+  } else if (style === 3) { // Happy
     const grid = [
       "      RRRR      ",
       "   w RRRRRR w   ",
       "   wWRFFFFRWw   ",
       "   wWFFFFFFWw   ",
-      "     FMMMMF     ",
+      "     Fm  mF     ",
       "      FFFF      ",
       "     TTTTTT     ",
       "    ATTTTTTA    ",
@@ -2437,8 +2447,69 @@ function getAvatarSVG(emotion) {
       "      C  C      ",
       "     DD  DD     "
     ];
-    return gridToSvg(grid, {'R':'#cc1800','F':'#ffe2ad','T':'#fff','A':'#ffe2ad','C':'#4b5320','D':'#222','w':'#fff','W':'#888','M':'#1a0800'});
+    return gridToRects(grid, {'R':'#cc1800','F':'#ffe2ad','T':'#fff','A':'#ffe2ad','C':'#4b5320','D':'#222','w':'#fff','W':'#888','m':'#cc1800'});
+  } else if (style === 4) { // Surprised
+    const grid = [
+      "      UUUU      ",
+      "     UUUUUU     ",
+      "    FUWFFWUF    ",
+      "    FWWFFWWF    ",
+      "     F oo F     ",
+      "      FFFF      ",
+      "     UUUUUU     ",
+      "    AUUUUUUA    ",
+      "    A UUUU A    ",
+      "    A UUUU A    ",
+      "      BBBB      ",
+      "      BBBB      ",
+      "      B  B      ",
+      "      B  B      ",
+      "     DD  DD     "
+    ];
+    return gridToRects(grid, {'U':'#0077e6','F':'#ffe2ad','W':'#fff','A':'#ffe2ad','B':'#1d3557','D':'#eee','o':'#111'});
+  } else if (style === 5) { // Sad
+    const grid = [
+      "      HHHH      ",
+      "     HHHHHH     ",
+      "    FHWFFWHF    ",
+      "    FttFFttF    ",
+      "     F -- F     ",
+      "      FFFF      ",
+      "     GGGGGG     ",
+      "    AGGGGGGA    ",
+      "    A GGGG A    ",
+      "    A GGGG A    ",
+      "      JJJJ      ",
+      "      JJJJ      ",
+      "      J  J      ",
+      "      J  J      ",
+      "     DD  DD     "
+    ];
+    return gridToRects(grid, {'H':'#111','F':'#ffe2ad','W':'#111','t':'#48c8ff','-':'#1a0800','G':'#888','A':'#ffe2ad','J':'#1d3557','D':'#222'});
+  } else if (style === 6) { // Disgusted
+    const grid = [
+      "      HHHH      ",
+      "     HHHHHH     ",
+      "    FHWFFWHF    ",
+      "    FFFFFFFF    ",
+      "     F nn F     ",
+      "      FFFF      ",
+      "     KKKKKK     ",
+      "    AKKKKKKA    ",
+      "    A KKKK A    ",
+      "    A KKKK A    ",
+      "      BBBB      ",
+      "      BBBB      ",
+      "      B  B      ",
+      "      B  B      ",
+      "     DD  DD     "
+    ];
+    return gridToRects(grid, {'H':'#111','F':'#ffe2ad','W':'#111','n':'#3a7a10','K':'#7af04a','A':'#ffe2ad','B':'#111','D':'#222'});
   }
+}
+
+function getAvatarSVG(emotion) {
+  return `<svg id="dog-svg" viewBox="0 0 16 18" width="130" height="146" shape-rendering="crispEdges">${getAvatarRects(emotion)}</svg>`;
 }
 
 document.getElementById('cam-wrap').classList.add('lobby-mode');
