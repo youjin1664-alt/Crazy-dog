@@ -464,12 +464,12 @@ let hand2X = innerWidth*0.75, hand2Y = innerHeight/2, hand2Detected = false;
 let cloneMode = false, cloneT = 0;
 let clones = [], cloneDivs = [];
 const CLONE_DURATION = 5;
-const MAX_CLONE_USES = 3;
+const MAX_SHIELD_USES = 3;
 const MONKEY_SPEED = 750;
 const CLONE_SPEED = 1260;
-let cloneUses = 0;
 let shrinkMode = false, shrinkT = 0, shrinkScale = 1.0;
 let shieldActive = false, shieldEl = null, shieldT = 0;
+let shieldUses = 0;
 let speedBoost = false, speedBoostT = 0;
 let dogInvisible = false, invisibleT = 0;
 let monkeyKnockedT = -1, monkeyKnockVX = 0, monkeyKnockVY = 0;
@@ -520,9 +520,9 @@ document.addEventListener('keydown',e=>{
   keys[e.key]=true;
   const key=e.key.toLowerCase();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','r','t','n'].includes(e.key)||key==='n') e.preventDefault();
-  if(key==='n'&&!cloneMode&&cloneUses<MAX_CLONE_USES) startClones();
+  if(key==='n'&&!cloneMode) startClones();
   if(e.key==='r'&&!shrinkMode) startShrink();
-  if(e.key==='t'&&!shieldActive) startShield();
+  if(key==='t'&&!shieldActive&&shieldUses<MAX_SHIELD_USES) startShield();
 });
 document.addEventListener('keyup',e=>{ keys[e.key]=false; });
 
@@ -1142,6 +1142,8 @@ function startShrink(){
 }
 
 function startShield(){
+  if(shieldUses>=MAX_SHIELD_USES) return;
+  shieldUses++;
   shieldActive=true; shieldT=0;
   shieldEl=document.createElement('div');
   shieldEl.id='shield-bubble';
@@ -1150,8 +1152,6 @@ function startShield(){
 }
 
 function startClones(){
-  if(cloneUses>=MAX_CLONE_USES) return;
-  cloneUses++;
   cloneMode=true; cloneT=0;
   // 화면 세 귀퉁이에서 출발
   const starts=[
