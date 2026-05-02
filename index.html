@@ -318,28 +318,6 @@
       font-size: 7px;
       text-shadow: 0 1px 0 rgba(255,255,255,0.82);
     }
-    #win-banner {
-      position: fixed; inset: 0;
-      z-index: 500;
-      display: none; place-items: center;
-      pointer-events: none;
-      background: rgba(110,210,255,0.12);
-      backdrop-filter: blur(2px);
-    }
-    #win-banner.show { display: grid; }
-    #win-banner .win-card {
-      padding: 26px 28px 22px;
-      border: 5px solid #ffe15a;
-      border-radius: 16px;
-      background: linear-gradient(145deg, rgba(255,255,255,0.94), rgba(185,245,255,0.9));
-      box-shadow: 0 18px 0 rgba(54,104,160,0.25), 0 30px 60px rgba(0,40,80,0.2);
-      color: #1f7f2d;
-      font-family: 'Press Start 2P', monospace;
-      font-size: clamp(20px, 5vw, 42px);
-      line-height: 1.35;
-      text-align: center;
-      text-shadow: 0 3px 0 rgba(255,255,255,0.9);
-    }
     #item-toast {
       position: fixed; top: 66px; left: 50%;
       transform: translate(-50%, -6px) scale(0.94);
@@ -435,9 +413,6 @@
     <div id="timer-fill"></div>
     <div id="timer-text">MONKEY TIME 20.0</div>
   </div>
-</div>
-<div id="win-banner" aria-live="assertive">
-  <div class="win-card">DOG WINS!</div>
 </div>
 <div id="item-toast"></div>
 <div id="scene-bg" aria-hidden="true">
@@ -768,7 +743,7 @@ let dogEvades = 0, monkeyCatches = 0;
 let powerX = innerWidth / 2, powerY = innerHeight * 0.44;
 let powerActive = true, powerCooldown = 0, powerGrace = 0.7, lastDogItem = '', lastMonkeyItem = '';
 const ROUND_TIME = 20;
-let roundT = 0, gameOver = false;
+let roundT = 0;
 
 /* DOM */
 const dogWrap   = document.getElementById('dog-wrap');
@@ -781,7 +756,6 @@ const itemToast = document.getElementById('item-toast');
 const powerBlock = document.getElementById('power-block');
 const timerFill = document.getElementById('timer-fill');
 const timerText = document.getElementById('timer-text');
-const winBanner = document.getElementById('win-banner');
 
 /* ════════════════════════════════════════════════════════════════════
    HELPERS
@@ -848,14 +822,10 @@ function updateTimer(){
   timerFill.style.width=(progress*100).toFixed(1)+'%';
   timerText.textContent='MONKEY TIME '+Math.max(0,ROUND_TIME-roundT).toFixed(1);
 }
-function endGame(){
-  if(gameOver) return;
-  gameOver=true;
-  addDogEvade('TIME UP: DOG WINS');
-  winBanner.classList.add('show');
-  powerBlock.classList.add('hidden');
-  if(shieldEl){ shieldEl.remove(); shieldEl=null; }
-  dogWrap.style.opacity='1';
+function completeDogRound(){
+  addDogEvade('DOG WINS: +1');
+  roundT=0;
+  updateTimer();
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -895,15 +865,9 @@ let prevTS=0;
 function frame(ts){
   const dt=Math.min((ts-prevTS)/1000,0.05);
   prevTS=ts; modeT+=dt; breathT+=dt;
-  if(!gameOver){
-    roundT+=dt;
-    updateTimer();
-    if(roundT>=ROUND_TIME) endGame();
-  }
-  if(gameOver){
-    requestAnimationFrame(frame);
-    return;
-  }
+  roundT+=dt;
+  if(roundT>=ROUND_TIME) completeDogRound();
+  else updateTimer();
 
   stretchX+=(1.0-stretchX)*0.10;
   if(Math.abs(stretchX-1.0)<0.005)stretchX=1.0;
