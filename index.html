@@ -8,316 +8,406 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: #ffffff;
-      cursor: none;
-      user-select: none;
+      width: 100vw; height: 100vh;
+      overflow: hidden; background: #fff;
+      cursor: none; user-select: none;
     }
 
+    #shield-bubble {
+      position: fixed; pointer-events: none; z-index: 149;
+      width: 140px; height: 90px; border-radius: 50%;
+      border: 3px solid rgba(80,200,255,0.9);
+      box-shadow: 0 0 22px 8px rgba(80,200,255,0.45), inset 0 0 20px rgba(80,200,255,0.18);
+      transform: translate(-50%,-50%);
+      animation: shieldPulse 0.7s ease-in-out infinite alternate;
+    }
+    @keyframes shieldPulse {
+      from { box-shadow: 0 0 16px 5px rgba(80,200,255,0.3), inset 0 0 14px rgba(80,200,255,0.1); }
+      to   { box-shadow: 0 0 32px 14px rgba(80,200,255,0.65), inset 0 0 28px rgba(80,200,255,0.28); }
+    }
     #cursor-dot {
-      position: fixed;
-      width: 9px;
-      height: 9px;
-      background: rgba(180, 110, 40, 0.45);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
+      position: fixed; width: 9px; height: 9px;
+      background: rgba(180,110,40,0.45);
+      border-radius: 50%; pointer-events: none;
+      z-index: 9999; transform: translate(-50%,-50%);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    #cursor-dot.hand-active {
+      background: rgba(80, 200, 255, 0.85);
+      box-shadow: 0 0 10px 4px rgba(80, 200, 255, 0.5);
+      transform: translate(-50%, -50%) scale(1.4);
     }
 
-    /* ── DOG WRAP ─────────────────────────────────────────────────── */
+    /* ── DOG ── */
     #dog-wrap {
-      position: fixed;
-      pointer-events: none;
-      z-index: 100;
-      transform: translate(-50%, -50%);
-      will-change: left, top;
+      position: fixed; pointer-events: none; z-index: 100;
+      transform: translate(-50%,-50%); will-change: left, top;
     }
-
     #dog-svg {
-      /* natural size — JS will scaleX this for stretch */
-      width: 220px;
-      height: 136px;
-      display: block;
-      filter: drop-shadow(0 8px 20px rgba(140, 70, 20, 0.20));
+      width: 220px; height: 136px; display: block;
+      filter: drop-shadow(0 8px 20px rgba(140,70,20,0.20));
       will-change: transform, filter;
       transform-origin: center center;
     }
 
-    /* ── WEBCAM ───────────────────────────────────────────────────── */
+    /* ── CANVAS ── */
+    #particle-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 150;
+    }
+
+    /* ── CONDIMENT PANEL ── */
+    #condiment-panel {
+      position: fixed; right: 22px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 250;
+      display: flex; flex-direction: column;
+      gap: 10px; align-items: center;
+      max-height: 96vh; overflow-y: auto;
+      scrollbar-width: none; padding: 4px 0;
+    }
+    #condiment-panel::-webkit-scrollbar { display: none; }
+
+    .bottle-wrap {
+      cursor: grab; flex-shrink: 0;
+      transform-origin: 50% 10%;
+      transition: transform 0.28s cubic-bezier(.34,1.56,.64,1),
+                  filter   0.20s ease;
+      filter: drop-shadow(0 3px 8px rgba(0,0,0,0.14));
+      -webkit-user-drag: none;
+    }
+    .bottle-wrap:hover {
+      transform: scale(1.13);
+      filter: drop-shadow(0 5px 14px rgba(0,0,0,0.22));
+    }
+    .bottle-wrap.pouring {
+      transform: rotate(138deg) scale(1.06); cursor: grabbing;
+    }
+    .bottle-label {
+      margin-top: 4px;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 5px; color: rgba(0,0,0,0.28);
+      text-align: center; letter-spacing: 0.04em;
+      pointer-events: none;
+    }
+
+    /* ── WEBCAM ── */
     #cam-wrap {
-      position: fixed;
-      bottom: 22px;
-      right: 22px;
-      z-index: 200;
-      border-radius: 14px;
-      overflow: hidden;
+      position: fixed; bottom: 22px; right: 22px;
+      z-index: 200; border-radius: 14px; overflow: hidden;
       box-shadow: 0 2px 20px rgba(0,0,0,0.09);
-      background: #111;
-      opacity: 0.72;
-      transition: opacity 0.2s;
+      background: #111; opacity: 0.72; transition: opacity 0.2s;
     }
     #cam-wrap:hover { opacity: 1; }
-    #webcam {
-      display: block;
-      width: 144px;
-      height: 108px;
-      object-fit: cover;
-      transform: scaleX(-1);
-    }
+    #webcam { display: block; width: 144px; height: 108px; object-fit: cover; transform: scaleX(-1); }
     #emotion-tag {
-      position: absolute;
-      inset: auto 0 0;
-      text-align: center;
-      padding: 4px 0 5px;
+      position: absolute; inset: auto 0 0;
+      text-align: center; padding: 4px 0 5px;
       font: 10px/1 system-ui, sans-serif;
       color: rgba(255,255,255,0.82);
       background: rgba(0,0,0,0.28);
-      letter-spacing: 0.07em;
-      text-transform: uppercase;
+      letter-spacing: 0.07em; text-transform: uppercase;
     }
     #cam-toggle {
-      position: fixed;
-      bottom: 22px;
-      right: 178px;
-      z-index: 201;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: none;
+      position: fixed; bottom: 22px; right: 178px;
+      z-index: 201; width: 28px; height: 28px;
+      border-radius: 50%; border: none;
       background: rgba(160,90,30,0.12);
       color: rgba(120,70,20,0.55);
-      font-size: 13px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       transition: background 0.2s;
     }
     #cam-toggle:hover { background: rgba(160,90,30,0.22); }
 
-    /* ── PIXEL DIALOG BOX ─────────────────────────────────────────── */
-    #dialog-box {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(560px, calc(100vw - 32px));
-      z-index: 300;
-      font-family: 'Press Start 2P', monospace;
+    #cursor-dot2 {
+      position: fixed; width: 9px; height: 9px;
+      background: rgba(180,40,40,0.35);
+      border-radius: 50%; pointer-events: none;
+      z-index: 9999; transform: translate(-50%,-50%);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
     }
-    .pixel-panel {
-      background: #fff;
-      border: 4px solid #4a90d9;
-      border-radius: 16px;
-      box-shadow:
-        0 0 0 2px #fff,
-        0 0 0 5px #4a90d9,
-        4px 6px 0 4px rgba(0,0,0,0.10);
-      padding: 14px 16px 12px;
+    #cursor-dot2.hand2-active {
+      background: rgba(255, 80, 80, 0.85);
+      box-shadow: 0 0 10px 4px rgba(255, 80, 80, 0.5);
+      transform: translate(-50%, -50%) scale(1.4);
     }
-    #chat-messages {
-      min-height: 44px;
-      max-height: 88px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      scrollbar-width: none;
-    }
-    #chat-messages::-webkit-scrollbar { display: none; }
-    .msg { font-size: 8px; line-height: 1.8; color: #222; animation: msgIn .15s ease; }
-    .msg.dog  { color: #b06020; }
-    .msg.user { color: #2563eb; }
-    @keyframes msgIn {
-      from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    #chat-row { display: flex; align-items: center; gap: 8px; }
-    #chat-input {
-      flex: 1;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      padding: 8px 10px;
-      border: 3px solid #4a90d9;
-      border-radius: 8px;
-      outline: none;
-      background: #f0f8ff;
-      color: #222;
-      caret-color: #b06020;
-    }
-    #chat-input::placeholder { color: #aac4e8; }
-    #chat-input:focus { border-color: #b06020; background: #fff; }
-    #chat-send {
-      font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
-      padding: 8px 10px;
-      background: #4a90d9;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 3px 0 #2563aa;
-      transition: background .15s;
-      white-space: nowrap;
-    }
-    #chat-send:hover  { background: #3b82f6; }
-    #chat-send:active { transform: translateY(2px); box-shadow: none; }
-    .blink {
-      display: inline-block; width: 8px; height: 10px;
-      background: #b06020; margin-left: 2px; vertical-align: middle;
-      animation: blink 1s step-end infinite;
-    }
-    @keyframes blink { 50% { opacity: 0; } }
 
-    /* hold hint */
     #hold-hint {
-      position: fixed;
-      top: 24px;
-      left: 50%;
-      transform: translateX(-50%);
+      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      font-family: 'Press Start 2P', monospace; font-size: 6px;
+      color: rgba(0,0,0,0.15); letter-spacing: 0.06em;
+      pointer-events: none; white-space: nowrap;
+    }
+
+    /* ── MONKEY ── */
+    #monkey-wrap {
+      position: fixed; z-index: 205;
+      transform: translate(-50%,-50%);
+      cursor: pointer; pointer-events: auto;
+      will-change: left, top;
+    }
+    #monkey-svg {
+      width: 72px; height: 103px; display: block;
+      filter: drop-shadow(0 6px 16px rgba(0,0,0,0.20));
+      will-change: transform, filter;
+      transform-origin: center center;
+    }
+    .monkey-label {
+      margin-top: 4px;
       font-family: 'Press Start 2P', monospace;
-      font-size: 7px;
-      color: rgba(0,0,0,0.18);
-      letter-spacing: 0.06em;
-      pointer-events: none;
-      white-space: nowrap;
-      transition: opacity .3s;
+      font-size: 5px; color: rgba(0,0,0,0.28);
+      text-align: center; letter-spacing: 0.04em;
+      pointer-events: none; white-space: nowrap;
     }
   </style>
 </head>
 <body>
 
 <div id="cursor-dot"></div>
+<canvas id="particle-canvas"></canvas>
 
-<!-- ── HOTDOG DOG SVG ─────────────────────────────────────────────── -->
+<!-- ── HOTDOG DOG ── -->
 <div id="dog-wrap">
   <svg id="dog-svg" viewBox="0 0 280 170" xmlns="http://www.w3.org/2000/svg">
     <defs>
-
-      <!-- BUN: warm cream, lit from top -->
       <radialGradient id="gBun" cx="50%" cy="28%" r="65%">
         <stop offset="0%"   stop-color="#faefd0"/>
         <stop offset="50%"  stop-color="#eed8a0"/>
         <stop offset="100%" stop-color="#c8a055"/>
       </radialGradient>
-
-      <!-- BUN ENDS (slightly richer tone for the rounded end caps) -->
       <radialGradient id="gBunEnd" cx="48%" cy="30%" r="62%">
         <stop offset="0%"   stop-color="#f5e5b5"/>
         <stop offset="55%"  stop-color="#ddc07a"/>
         <stop offset="100%" stop-color="#b88a40"/>
       </radialGradient>
-
-      <!-- SAUSAGE body -->
       <radialGradient id="gSaus" cx="50%" cy="28%" r="68%">
         <stop offset="0%"   stop-color="#d06838"/>
         <stop offset="38%"  stop-color="#963820"/>
         <stop offset="78%"  stop-color="#621f0c"/>
         <stop offset="100%" stop-color="#3e1005"/>
       </radialGradient>
-
-      <!-- MUSTARD — stops controlled by emotion theme -->
       <linearGradient id="gMust" x1="0%" y1="0%" x2="0%" y2="100%">
         <stop id="m1" offset="0%"   stop-color="#f5d840"/>
         <stop id="m2" offset="100%" stop-color="#c8a010"/>
       </linearGradient>
-
-      <!-- SPECULAR highlight -->
       <radialGradient id="gSpec" cx="30%" cy="22%" r="55%">
         <stop offset="0%"   stop-color="rgba(255,255,255,0.70)"/>
         <stop offset="60%"  stop-color="rgba(255,255,255,0.15)"/>
         <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
       </radialGradient>
-
-      <!-- BLOOM (soft edge glow) -->
-      <filter id="fBloom" x="-22%" y="-22%" width="144%" height="144%" color-interpolation-filters="sRGB">
+      <filter id="fBloom" x="-22%" y="-22%" width="144%" height="144%">
         <feGaussianBlur stdDeviation="5" result="b"/>
         <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
-
     </defs>
-
-    <!-- SHADOW -->
     <ellipse cx="140" cy="163" rx="95" ry="8" fill="rgba(100,50,10,0.13)"/>
-
-    <!-- ── BUN BODY (the large cream rounded slab) ─── -->
     <rect x="12" y="62" width="256" height="86" rx="43" fill="url(#gBun)"/>
-    <!-- Bun underside darker rim -->
     <rect x="14" y="104" width="252" height="44" rx="35" fill="#d4aa65"/>
-    <!-- Bun bottom highlight -->
-    <ellipse cx="140" cy="148" rx="100" ry="10" fill="rgba(255,240,180,0.25)"/>
-
-    <!-- ── SAUSAGE (sits inside the bun split) ─── -->
-    <rect x="9" y="72" width="262" height="68" rx="30" fill="url(#gSaus)"/>
-    <!-- Sausage top specular streak -->
+    <rect x="9"  y="72"  width="262" height="68" rx="30" fill="url(#gSaus)"/>
     <ellipse cx="130" cy="78" rx="72" ry="10" fill="url(#gSpec)"/>
-    <!-- Sausage bloom edge (softness) -->
-    <rect x="9" y="72" width="262" height="68" rx="30" fill="url(#gSaus)" opacity="0.22" filter="url(#fBloom)"/>
-
-    <!-- ── BUN LEFT CAP (covers the left end of sausage) ─── -->
-    <ellipse cx="34" cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
-    <!-- Left cap specular -->
-    <ellipse cx="26" cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
-
-    <!-- ── BUN RIGHT CAP ─── -->
+    <rect x="9"  y="72"  width="262" height="68" rx="30" fill="url(#gSaus)" opacity="0.22" filter="url(#fBloom)"/>
+    <ellipse cx="34"  cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
+    <ellipse cx="26"  cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
     <ellipse cx="246" cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
-    <!-- Right cap specular -->
     <ellipse cx="238" cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
-
-    <!-- ── LEGS (peeking below bun) ─── -->
-    <!-- Back pair (behind) -->
     <rect x="68"  y="130" width="22" height="36" rx="11" fill="#4e1a08" opacity="0.80"/>
     <rect x="170" y="130" width="22" height="36" rx="11" fill="#4e1a08" opacity="0.80"/>
-    <!-- Front pair -->
     <rect x="92"  y="133" width="22" height="33" rx="11" fill="#5c2010"/>
     <rect x="146" y="133" width="22" height="33" rx="11" fill="#5c2010"/>
-
-    <!-- ── DOG FACE (left end of sausage) ─── -->
-
-    <!-- Left floppy ear -->
     <ellipse cx="22" cy="96" rx="14" ry="20" fill="#4e1a08" transform="rotate(-12,22,96)"/>
     <ellipse cx="22" cy="96" rx="14" ry="20" fill="#4e1a08" transform="rotate(-12,22,96)" opacity="0.3" filter="url(#fBloom)"/>
-
-    <!-- Muzzle patch (lighter area on sausage front face) -->
     <ellipse cx="52" cy="107" rx="22" ry="18" fill="rgba(200,100,55,0.40)"/>
-
-    <!-- Eyes -->
     <circle cx="42" cy="95"  r="7"   fill="#1a0804"/>
     <circle cx="62" cy="93"  r="7"   fill="#1a0804"/>
     <circle cx="42" cy="95"  r="4"   fill="#0d0402"/>
     <circle cx="62" cy="93"  r="4"   fill="#0d0402"/>
-    <!-- Eye shine -->
     <circle cx="44.5" cy="92.5" r="2.5" fill="rgba(255,255,255,0.75)"/>
     <circle cx="64.5" cy="90.5" r="2.5" fill="rgba(255,255,255,0.75)"/>
-
-    <!-- Nose -->
     <ellipse cx="52" cy="108" rx="7" ry="5.5" fill="#1a0804"/>
     <ellipse cx="51" cy="106.5" rx="2.2" ry="1.6" fill="rgba(255,255,255,0.35)"/>
-
-    <!-- Mouth -->
-    <path d="M 44 116 Q 52 123 60 116"
-          stroke="#1a0804" stroke-width="2.8" fill="none" stroke-linecap="round"/>
-
-    <!-- ── MUSTARD SQUIGGLE (across exposed sausage top) ─── -->
-    <path id="mustard-path"
-          d="M 72 68 C 82 54, 100 78, 118 64 C 136 50, 154 74, 172 60 C 188 47, 205 70, 218 58"
-          stroke="url(#gMust)" stroke-width="13" fill="none"
-          stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Mustard bloom -->
-    <path d="M 72 68 C 82 54, 100 78, 118 64 C 136 50, 154 74, 172 60 C 188 47, 205 70, 218 58"
-          stroke="url(#gMust)" stroke-width="13" fill="none"
-          stroke-linecap="round" stroke-linejoin="round"
+    <path d="M 44 116 Q 52 123 60 116" stroke="#1a0804" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M 72 68 C 82 54,100 78,118 64 C 136 50,154 74,172 60 C 188 47,205 70,218 58"
+          stroke="url(#gMust)" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 72 68 C 82 54,100 78,118 64 C 136 50,154 74,172 60 C 188 47,205 70,218 58"
+          stroke="url(#gMust)" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"
           opacity="0.30" filter="url(#fBloom)"/>
-
   </svg>
 </div>
-<!-- ───────────────────────────────────────────────────────────────── -->
+
+<!-- ── MONKEY ── -->
+<div id="monkey-wrap">
+  <svg id="monkey-svg" viewBox="0 0 80 115" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="fMBloom" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="4" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <!-- Shadow -->
+    <ellipse cx="40" cy="112" rx="21" ry="5" fill="rgba(0,0,0,0.13)"/>
+    <!-- Legs -->
+    <ellipse cx="31" cy="97" rx="8.5" ry="13" fill="#8B5A2B" transform="rotate(-10 31 97)"/>
+    <ellipse cx="49" cy="97" rx="8.5" ry="13" fill="#8B5A2B" transform="rotate(10 49 97)"/>
+    <!-- Feet -->
+    <ellipse cx="27" cy="108" rx="12" ry="6.5" fill="#7A4E24" transform="rotate(-8 27 108)"/>
+    <ellipse cx="53" cy="108" rx="12" ry="6.5" fill="#7A4E24" transform="rotate(8 53 108)"/>
+    <!-- Yellow shorts -->
+    <rect x="21" y="76" width="38" height="26" rx="10" fill="#FFD600"/>
+    <ellipse cx="40" cy="76" rx="19" ry="8" fill="#FFE030"/>
+    <ellipse cx="40" cy="102" rx="17" ry="6.5" fill="#ECC000"/>
+    <line x1="40" y1="79" x2="40" y2="100" stroke="#ECC000" stroke-width="1.5"/>
+    <!-- Torso -->
+    <ellipse cx="40" cy="64" rx="16.5" ry="20" fill="#8B5A2B"/>
+    <!-- Left arm -->
+    <ellipse cx="18" cy="66" rx="7" ry="14.5" fill="#8B5A2B" transform="rotate(-18 18 66)"/>
+    <ellipse cx="11" cy="78" rx="10" ry="7" fill="#C49A6C"/>
+    <!-- Right arm -->
+    <ellipse cx="62" cy="66" rx="7" ry="14.5" fill="#8B5A2B" transform="rotate(18 62 66)"/>
+    <ellipse cx="69" cy="78" rx="10" ry="7" fill="#C49A6C"/>
+    <!-- Head brown -->
+    <circle cx="40" cy="34" r="26" fill="#8B5A2B"/>
+    <!-- Ears -->
+    <circle cx="13" cy="34" r="11" fill="#8B5A2B"/>
+    <circle cx="13" cy="34" r="7"  fill="#C49A6C"/>
+    <circle cx="67" cy="34" r="11" fill="#8B5A2B"/>
+    <circle cx="67" cy="34" r="7"  fill="#C49A6C"/>
+    <!-- Face cream -->
+    <ellipse cx="40" cy="40" rx="19" ry="21" fill="#C49A6C"/>
+    <!-- Eyes (large bulging) -->
+    <circle cx="30" cy="31" r="11.5" fill="white"/>
+    <circle cx="50" cy="31" r="11.5" fill="white"/>
+    <circle cx="30" cy="31" r="6.5"  fill="#111"/>
+    <circle cx="50" cy="31" r="6.5"  fill="#111"/>
+    <circle cx="27.5" cy="28" r="2.8" fill="white"/>
+    <circle cx="47.5" cy="28" r="2.8" fill="white"/>
+    <!-- Mouth wide open -->
+    <ellipse cx="40" cy="47" rx="13.5" ry="11" fill="#1a0800"/>
+    <ellipse cx="40" cy="49" rx="11"   ry="9"  fill="#cc1800"/>
+    <rect x="33"  y="47" width="5.5" height="4.5" rx="1.5" fill="rgba(255,255,255,0.92)"/>
+    <rect x="41.5" y="47" width="5.5" height="4.5" rx="1.5" fill="rgba(255,255,255,0.92)"/>
+    <!-- Helmet -->
+    <rect x="15" y="16" width="50" height="16" rx="9" fill="#E8E8E8"/>
+    <ellipse cx="40" cy="16" rx="25" ry="10" fill="#ECECEC"/>
+    <rect x="13" y="28" width="54" height="7"  rx="3.5" fill="#D0D0D0"/>
+    <ellipse cx="27" cy="14" rx="8" ry="3.5" fill="rgba(255,255,255,0.50)"/>
+    <path d="M 16 25 Q 40 29 64 25" stroke="rgba(0,0,0,0.07)" stroke-width="1.5" fill="none"/>
+    <!-- Siren dome -->
+    <ellipse cx="40" cy="9"  rx="9"  ry="7"   fill="#CC0000"/>
+    <ellipse cx="40" cy="5"  rx="6"  ry="5"   fill="#FF3333"/>
+    <ellipse cx="37.5" cy="3.5" rx="2" ry="1.5" fill="rgba(255,210,210,0.80)"/>
+    <!-- Siren glow (JS-animated) -->
+    <circle id="mk-siren-glow" cx="40" cy="6" r="18" fill="rgba(255,40,0,0)" opacity="0" filter="url(#fMBloom)"/>
+  </svg>
+  <div class="monkey-label">MONKEY</div>
+</div>
+
+<!-- ── CONDIMENT PANEL ── -->
+<div id="condiment-panel">
+
+  <!-- KETCHUP -->
+  <div class="bottle-wrap" id="btn-ketchup" data-cond="ketchup">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gK" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#ff6666"/><stop offset="50%" stop-color="#dd1818"/><stop offset="100%" stop-color="#990a0a"/>
+      </radialGradient></defs>
+      <ellipse cx="27" cy="6"  rx="5.5" ry="6" fill="#d8d8d8"/>
+      <ellipse cx="27" cy="3"  rx="3.5" ry="3" fill="#f0f0f0"/>
+      <rect x="20" y="10" width="14" height="14" rx="5" fill="#c81010"/>
+      <rect x="5"  y="22" width="44" height="58" rx="20" fill="url(#gK)"/>
+      <rect x="7"  y="36" width="40" height="26" rx="5" fill="rgba(255,255,255,0.90)"/>
+      <text x="27" y="47" text-anchor="middle" font-size="5.8" fill="#cc0000" font-family="system-ui" font-weight="bold">KETCHUP</text>
+      <text x="27" y="57" text-anchor="middle" font-size="4.2" fill="#e04040" font-family="system-ui">squeeze</text>
+      <ellipse cx="14" cy="42" rx="4.5" ry="16" fill="rgba(255,255,255,0.28)"/>
+      <rect x="5"  y="75" width="44" height="5" rx="2.5" fill="#aa0808"/>
+    </svg>
+    <div class="bottle-label">KETCHUP</div>
+  </div>
+
+  <!-- MUSTARD -->
+  <div class="bottle-wrap" id="btn-mustard" data-cond="mustard">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gMB" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#ffe060"/><stop offset="50%" stop-color="#e8c000"/><stop offset="100%" stop-color="#a07800"/>
+      </radialGradient></defs>
+      <ellipse cx="27" cy="6"  rx="5.5" ry="6" fill="#d09800"/>
+      <ellipse cx="27" cy="3"  rx="3.5" ry="3" fill="#e8b800"/>
+      <rect x="20" y="10" width="14" height="14" rx="5" fill="#c8a000"/>
+      <rect x="5"  y="22" width="44" height="58" rx="20" fill="url(#gMB)"/>
+      <rect x="7"  y="36" width="40" height="26" rx="5" fill="rgba(255,255,255,0.90)"/>
+      <text x="27" y="47" text-anchor="middle" font-size="5.8" fill="#8a6800" font-family="system-ui" font-weight="bold">MUSTARD</text>
+      <text x="27" y="57" text-anchor="middle" font-size="4.2" fill="#a07800" font-family="system-ui">squeeze</text>
+      <ellipse cx="14" cy="42" rx="4.5" ry="16" fill="rgba(255,255,255,0.28)"/>
+      <rect x="5"  y="75" width="44" height="5" rx="2.5" fill="#a08000"/>
+    </svg>
+    <div class="bottle-label">MUSTARD</div>
+  </div>
+
+  <!-- WASABI -->
+  <div class="bottle-wrap" id="btn-wasabi" data-cond="wasabi">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gW" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#90e040"/><stop offset="50%" stop-color="#50a818"/><stop offset="100%" stop-color="#2a6008"/>
+      </radialGradient></defs>
+      <rect x="22" y="2" width="10" height="12" rx="5" fill="#3a7a10"/>
+      <ellipse cx="27" cy="2" rx="4" ry="3" fill="#4a9a18"/>
+      <rect x="18" y="12" width="18" height="12" rx="5" fill="#3a8818"/>
+      <rect x="5"  y="22" width="44" height="58" rx="14" fill="url(#gW)"/>
+      <ellipse cx="14" cy="40" rx="4.5" ry="16" fill="rgba(255,255,255,0.22)"/>
+      <rect x="7"  y="36" width="40" height="26" rx="5" fill="rgba(255,255,255,0.88)"/>
+      <text x="27" y="47" text-anchor="middle" font-size="5.8" fill="#2a6808" font-family="system-ui" font-weight="bold">WASABI</text>
+      <text x="27" y="57" text-anchor="middle" font-size="4.2" fill="#4a8828" font-family="system-ui">squeeze</text>
+      <!-- Crimped tube bottom -->
+      <rect x="10" y="72" width="34" height="7" rx="3.5" fill="#3a7010"/>
+      <rect x="15" y="73" width="24" height="5" rx="2.5" fill="#2a5808"/>
+    </svg>
+    <div class="bottle-label">WASABI</div>
+  </div>
+
+  <!-- SOY SAUCE -->
+  <div class="bottle-wrap" id="btn-soy" data-cond="soy">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gS" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#5a3010"/><stop offset="50%" stop-color="#2a1208"/><stop offset="100%" stop-color="#120800"/>
+      </radialGradient></defs>
+      <ellipse cx="27" cy="7"  rx="7"   ry="7"   fill="#1a0a00"/>
+      <ellipse cx="27" cy="4"  rx="4.5" ry="4.5" fill="#2a1400"/>
+      <rect x="20" y="12" width="14" height="12" rx="5" fill="#180e00"/>
+      <rect x="5"  y="22" width="44" height="58" rx="20" fill="url(#gS)"/>
+      <ellipse cx="14" cy="40" rx="4"   ry="15"  fill="rgba(110,60,20,0.35)"/>
+      <rect x="7"  y="34" width="40" height="26" rx="5" fill="rgba(255,220,140,0.90)"/>
+      <text x="27" y="44" text-anchor="middle" font-size="5.8" fill="#1a0800" font-family="system-ui" font-weight="bold">SOY</text>
+      <text x="27" y="55" text-anchor="middle" font-size="5.2" fill="#2a1000" font-family="system-ui" font-weight="bold">SAUCE</text>
+      <rect x="5"  y="75" width="44" height="5" rx="2.5" fill="#100800"/>
+    </svg>
+    <div class="bottle-label">SOY SAUCE</div>
+  </div>
+
+  <!-- PEPPER -->
+  <div class="bottle-wrap" id="btn-pepper" data-cond="pepper">
+    <svg width="48" height="80" viewBox="0 0 54 92" xmlns="http://www.w3.org/2000/svg">
+      <defs><radialGradient id="gP" cx="38%" cy="28%" r="62%">
+        <stop offset="0%" stop-color="#666"/><stop offset="50%" stop-color="#333"/><stop offset="100%" stop-color="#111"/>
+      </radialGradient></defs>
+      <!-- Shaker cap with holes -->
+      <ellipse cx="27" cy="9" rx="11" ry="10" fill="#444"/>
+      <circle cx="23" cy="7"  r="1.8" fill="#222"/>
+      <circle cx="27" cy="5"  r="1.8" fill="#222"/>
+      <circle cx="31" cy="7"  r="1.8" fill="#222"/>
+      <circle cx="25" cy="11" r="1.8" fill="#222"/>
+      <circle cx="29" cy="11" r="1.8" fill="#222"/>
+      <rect x="5"  y="17" width="44" height="62" rx="18" fill="url(#gP)"/>
+      <ellipse cx="14" cy="38" rx="4.5" ry="16" fill="rgba(255,255,255,0.14)"/>
+      <rect x="7"  y="34" width="40" height="24" rx="5" fill="rgba(255,255,255,0.88)"/>
+      <text x="27" y="44" text-anchor="middle" font-size="5.2" fill="#222" font-family="system-ui" font-weight="bold">PEPPER</text>
+      <text x="27" y="53" text-anchor="middle" font-size="4" fill="#444" font-family="system-ui">grind</text>
+      <rect x="5"  y="74" width="44" height="5" rx="2.5" fill="#1a1a1a"/>
+    </svg>
+    <div class="bottle-label">PEPPER</div>
+  </div>
+
+</div>
 
 <div id="hold-hint">hold to stretch · tap · stroke · circle</div>
 
@@ -327,372 +417,900 @@
 </div>
 <button id="cam-toggle" title="Toggle camera">◎</button>
 
-<div id="dialog-box">
-  <div class="pixel-panel">
-    <div id="chat-messages">
-      <div class="msg dog">Woof! What animal do you want me to be?<span class="blink"></span></div>
-    </div>
-    <div id="chat-row">
-      <input id="chat-input" type="text" maxlength="30" placeholder="type an animal..." autocomplete="off" spellcheck="false"/>
-      <button id="chat-send">OK ▶</button>
-    </div>
-  </div>
-</div>
+<div id="cursor-dot2"></div>
 
 
 <script type="module">
-import { FaceLandmarker, FilesetResolver }
+import { FaceLandmarker, FilesetResolver, HandLandmarker }
   from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
 
-
 /* ════════════════════════════════════════════════════════════════════
-   EMOTION → MUSTARD COLOUR THEMES
+   THEMES
    ════════════════════════════════════════════════════════════════════ */
 const THEMES = {
-  default:   { m1: '#f5d840', m2: '#c8a010', glowR: 220, glowG: 170, glowB:  10 },
-  happy:     { m1: '#ff9030', m2: '#e06000', glowR: 255, glowG: 140, glowB:   0 },
-  angry:     { m1: '#ff3a3a', m2: '#cc0000', glowR: 240, glowG:  40, glowB:  40 },
-  disgusted: { m1: '#7de040', m2: '#3da800', glowR:  80, glowG: 210, glowB:  30 },
-  surprised: { m1: '#60c8ff', m2: '#2080e0', glowR:  60, glowG: 170, glowB: 255 },
-  sad:       { m1: '#e0e8f4', m2: '#90a8c8', glowR: 160, glowG: 180, glowB: 220 },
+  default:   { m1:'#f5d840', m2:'#c8a010', glowR:220, glowG:170, glowB: 10 },
+  happy:     { m1:'#ff9030', m2:'#e06000', glowR:255, glowG:140, glowB:  0 },
+  angry:     { m1:'#ff3a3a', m2:'#cc0000', glowR:240, glowG: 40, glowB: 40 },
+  disgusted: { m1:'#7de040', m2:'#3da800', glowR: 80, glowG:210, glowB: 30 },
+  surprised: { m1:'#60c8ff', m2:'#2080e0', glowR: 60, glowG:170, glowB:255 },
+  sad:       { m1:'#e0e8f4', m2:'#90a8c8', glowR:160, glowG:180, glowB:220 },
 };
-
-let currentTheme   = THEMES.default;
-let currentEmotion = 'default';
+let currentTheme = THEMES.default, currentEmotion = 'default';
 
 function applyTheme(name) {
   const t = THEMES[name] || THEMES.default;
   document.getElementById('m1').setAttribute('stop-color', t.m1);
   document.getElementById('m2').setAttribute('stop-color', t.m2);
-  currentTheme   = t;
-  currentEmotion = name;
+  currentTheme = t; currentEmotion = name;
   document.getElementById('emotion-tag').textContent = name;
 }
-
 
 /* ════════════════════════════════════════════════════════════════════
    STATE
    ════════════════════════════════════════════════════════════════════ */
-let dogX = innerWidth  / 2;
-let dogY = innerHeight / 2;
-let mx   = innerWidth  / 2;
-let my   = innerHeight / 2;
-
-let mode    = 'idle';   // idle | run | belly | spin
-let modeT   = 0;
-let breathT = 0;
-
-let pressed    = false;
-let pressX     = 0;
-let pressY     = 0;
-let pressT     = 0;
-let strokeDist = 0;
-
+let dogX = innerWidth/2, dogY = innerHeight/2;
+let mx   = innerWidth/2, my   = innerHeight/2;
+let mode = 'idle', modeT = 0, breathT = 0;
 let runTX = 0, runTY = 0;
+let prevAngle = null, angleHist = [], spinAngle = 0, facingLeft = false;
+let stretchX = 1.0;
+const STRETCH_MAX = 3.8, STRETCH_RATE = 2.2;
+let shakeOffsetX = 0;
+let poopDropped   = false;  // for poop_squat
+let sneezeCount   = 0;      // sneeze bursts fired
+let handDetected  = false;
+let handLandmarker = null;
+let hand2X = innerWidth*0.75, hand2Y = innerHeight/2, hand2Detected = false;
+let cloneMode = false, cloneT = 0;
+let clones = [], cloneDivs = [];
+const CLONE_DURATION = 5;
+let shrinkMode = false, shrinkT = 0, shrinkScale = 1.0;
+let shieldActive = false, shieldEl = null, shieldT = 0;
+let speedBoost = false, speedBoostT = 0;
+let dogInvisible = false, invisibleT = 0;
+let monkeyKnockedT = -1, monkeyKnockVX = 0, monkeyKnockVY = 0;
+let monkeySlipping = false, monkeySlipT = 0, monkeySlipVX = 0, monkeySlipVY = 0;
+let puddles = [];
 
-let prevAngle = null;
-let angleHist = [];
-let spinAngle = 0;
-let facingLeft = false;
-
-// Stretch state
-let stretchX       = 1.0;   // current horizontal scale
-const STRETCH_MAX  = 3.8;
-const STRETCH_RATE = 2.2;   // units per second when holding
-
-/* ════════════════════════════════════════════════════════════════════
-   DOM REFS
-   ════════════════════════════════════════════════════════════════════ */
+/* DOM */
 const dogWrap   = document.getElementById('dog-wrap');
 const dogSvg    = document.getElementById('dog-svg');
-const cursorDot = document.getElementById('cursor-dot');
-
+const cursorDot  = document.getElementById('cursor-dot');
+const cursorDot2 = document.getElementById('cursor-dot2');
 
 /* ════════════════════════════════════════════════════════════════════
    HELPERS
    ════════════════════════════════════════════════════════════════════ */
-const DOG_HIT_W = 110;  // half-width of hotdog hit area
-const DOG_HIT_H =  55;  // half-height
-
-function isOnDog(x, y) {
-  return Math.abs(x - dogX) < DOG_HIT_W && Math.abs(y - dogY) < DOG_HIT_H;
+const DOG_HIT_W = 110, DOG_HIT_H = 55;
+function isOnDog(x,y){ return Math.abs(x-dogX)<DOG_HIT_W && Math.abs(y-dogY)<DOG_HIT_H; }
+function dv(ax,ay,bx,by){ return Math.hypot(ax-bx,ay-by); }
+function pickRunTarget(){
+  const p=120; runTX=p+Math.random()*(innerWidth-p*2); runTY=p+Math.random()*(innerHeight-p*2);
 }
-function dist(ax, ay, bx, by) { return Math.hypot(ax - bx, ay - by); }
-
-function pickRunTarget() {
-  const pad = 120;
-  runTX = pad + Math.random() * (innerWidth  - pad * 2);
-  runTY = pad + Math.random() * (innerHeight - pad * 2);
+function setGlow(on){
+  const {glowR:r,glowG:g,glowB:b}=currentTheme;
+  dogSvg.style.filter=on
+    ?`drop-shadow(0 0 24px rgba(${r},${g},${b},0.92)) drop-shadow(0 0 50px rgba(${r},${g},${b},0.50))`
+    :`drop-shadow(0 8px 20px rgba(140,70,20,0.20))`;
 }
-
-function setGlow(on) {
-  const { glowR: r, glowG: g, glowB: b } = currentTheme;
-  dogSvg.style.filter = on
-    ? `drop-shadow(0 0 24px rgba(${r},${g},${b},0.92)) drop-shadow(0 0 50px rgba(${r},${g},${b},0.50))`
-    : `drop-shadow(0 8px 20px rgba(140,70,20,0.20))`;
+function enterMode(m){
+  if(mode===m && m!=='stunned') return;
+  mode=m; modeT=0; shakeOffsetX=0; poopDropped=false; sneezeCount=0;
+  if(m==='run'||m==='dislike_react'||m==='poop_run'){ if(m==='run')pickRunTarget(); setGlow(true); }
+  else setGlow(false);
+  if(m!=='spin') spinAngle=0;
 }
-
-function enterMode(m) {
-  if (mode === m) return;
-  mode  = m;
-  modeT = 0;
-  if (m === 'run') { pickRunTarget(); setGlow(true); }
-  else             { setGlow(false); }
-  if (m !== 'spin') spinAngle = 0;
+function applyTransform({bounceY=0,rotation=0,scaleY=1,overrideX=null}={}){
+  const fx=facingLeft?-1:1;
+  const sx=overrideX!==null?overrideX:fx*stretchX;
+  dogSvg.style.transform=`rotate(${rotation}deg) translateY(${bounceY}px) scale(${sx*shrinkScale},${scaleY*shrinkScale})`;
 }
-
-/* Build the final transform string (called by every tick) */
-function applyTransform(opts = {}) {
-  const {
-    bounceY  = 0,
-    rotation = 0,
-    scaleY   = 1,
-    overrideX = null,   // absolute scaleX (ignores stretchX & facing)
-  } = opts;
-
-  const fx = facingLeft ? -1 : 1;
-  const sx = overrideX !== null ? overrideX : fx * stretchX;
-
-  dogSvg.style.transform =
-    `rotate(${rotation}deg) translateY(${bounceY}px) scale(${sx}, ${scaleY})`;
-}
-
 
 /* ════════════════════════════════════════════════════════════════════
-   INPUT EVENTS
+   INPUT
    ════════════════════════════════════════════════════════════════════ */
-document.addEventListener('mousemove', e => {
-  mx = e.clientX;
-  my = e.clientY;
-  cursorDot.style.left = mx + 'px';
-  cursorDot.style.top  = my + 'px';
 
-  if (pressed && mode !== 'run') {
-    strokeDist = dist(mx, my, pressX, pressY);
-    if (strokeDist > 18 && isOnDog(mx, my)) enterMode('belly');
-  }
+/* Keyboard state */
+const keys={};
+document.addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','r','t'].includes(e.key)) e.preventDefault();
+  if(e.key==='n'&&!cloneMode) startClones();
+  if(e.key==='r'&&!shrinkMode) startShrink();
+  if(e.key==='t'&&!shieldActive) startShield();
 });
+document.addEventListener('keyup',e=>{ keys[e.key]=false; });
 
-document.addEventListener('mousedown', e => {
-  pressed    = true;
-  pressX     = e.clientX;
-  pressY     = e.clientY;
-  pressT     = performance.now();
-  strokeDist = 0;
-});
-
-document.addEventListener('mouseup', e => {
-  if (!pressed) return;
-  const moved    = dist(e.clientX, e.clientY, pressX, pressY);
-  const duration = performance.now() - pressT;
-  const onDog    = isOnDog(e.clientX, e.clientY);
-
-  if (moved < 14 && duration < 320 && onDog && mode === 'idle') {
-    enterMode('run');
+/* Circle detector */
+function detectCircle(){
+  const dx=mx-dogX, dy=my-dogY, dist=Math.hypot(dx,dy);
+  if(dist<70||dist>260){ angleHist=[]; prevAngle=null; return false; }
+  const angle=Math.atan2(dy,dx);
+  if(prevAngle!==null){
+    let d=angle-prevAngle;
+    if(d>Math.PI)d-=2*Math.PI; if(d<-Math.PI)d+=2*Math.PI;
+    angleHist.push(d); if(angleHist.length>44)angleHist.shift();
+    if(Math.abs(angleHist.reduce((a,b)=>a+b,0))>Math.PI*1.7)return true;
   }
-
-  pressed = false;
-
-  if (mode === 'belly') {
-    setTimeout(() => { if (mode === 'belly') enterMode('idle'); }, 1800);
-  }
-});
-
-/* Touch */
-document.addEventListener('touchstart', e => {
-  const t = e.touches[0];
-  pressX = t.clientX; pressY = t.clientY; pressT = performance.now();
-  strokeDist = 0; pressed = true;
-}, { passive: true });
-
-document.addEventListener('touchmove', e => {
-  const t = e.touches[0];
-  mx = t.clientX; my = t.clientY;
-  if (pressed && mode !== 'run') {
-    strokeDist = dist(mx, my, pressX, pressY);
-    if (strokeDist > 18 && isOnDog(mx, my)) enterMode('belly');
-  }
-}, { passive: true });
-
-document.addEventListener('touchend', e => {
-  const ch = e.changedTouches[0];
-  const moved    = dist(ch.clientX, ch.clientY, pressX, pressY);
-  const duration = performance.now() - pressT;
-  const onDog    = isOnDog(ch.clientX, ch.clientY);
-  if (moved < 14 && duration < 320 && onDog && mode === 'idle') enterMode('run');
-  pressed = false;
-  if (mode === 'belly') setTimeout(() => { if (mode === 'belly') enterMode('idle'); }, 1800);
-}, { passive: true });
-
-
-/* ════════════════════════════════════════════════════════════════════
-   CIRCULAR MOTION DETECTOR
-   ════════════════════════════════════════════════════════════════════ */
-function detectCircle() {
-  const dx = mx - dogX, dy = my - dogY;
-  const d  = Math.hypot(dx, dy);
-  if (d < 70 || d > 260) { angleHist = []; prevAngle = null; return false; }
-
-  const angle = Math.atan2(dy, dx);
-  if (prevAngle !== null) {
-    let delta = angle - prevAngle;
-    if (delta >  Math.PI) delta -= 2 * Math.PI;
-    if (delta < -Math.PI) delta += 2 * Math.PI;
-    angleHist.push(delta);
-    if (angleHist.length > 44) angleHist.shift();
-    if (Math.abs(angleHist.reduce((a, b) => a + b, 0)) > Math.PI * 1.7) return true;
-  }
-  prevAngle = angle;
-  return false;
+  prevAngle=angle; return false;
 }
-
 
 /* ════════════════════════════════════════════════════════════════════
    ANIMATION LOOP
    ════════════════════════════════════════════════════════════════════ */
-let prevTS = 0;
+let prevTS=0;
+function frame(ts){
+  const dt=Math.min((ts-prevTS)/1000,0.05);
+  prevTS=ts; modeT+=dt; breathT+=dt;
 
-function frame(ts) {
-  const dt = Math.min((ts - prevTS) / 1000, 0.05);
-  prevTS    = ts;
-  modeT    += dt;
-  breathT  += dt;
+  stretchX+=(1.0-stretchX)*0.10;
+  if(Math.abs(stretchX-1.0)<0.005)stretchX=1.0;
 
-  /* ── STRETCH logic ──────────────────────────────────────────────── */
-  if (pressed && mode !== 'belly' && mode !== 'spin') {
-    const holdSec = (performance.now() - pressT) / 1000;
-    if (holdSec > 0.18) {
-      stretchX = Math.min(1 + (holdSec - 0.18) * STRETCH_RATE, STRETCH_MAX);
-    }
-  } else {
-    // Spring back
-    stretchX += (1.0 - stretchX) * 0.10;
-    if (Math.abs(stretchX - 1.0) < 0.005) stretchX = 1.0;
-  }
+  if(mode==='idle')          tickIdle(dt);
+  if(mode==='run')           tickRun(dt);
+  if(mode==='belly')         tickBelly(dt);
+  if(mode==='spin')          tickSpin(dt);
+  if(mode==='happy_react')   tickHappyReact(dt);
+  if(mode==='dislike_react') tickDislikeReact(dt);
+  if(mode==='poop_run')      tickPoopRun(dt);
+  if(mode==='poop_squat')    tickPoopSquat(dt);
+  if(mode==='sneeze')        tickSneeze(dt);
+  if(mode==='stunned')       tickStunned(dt);
+  tickMonkey(dt);
+  tickClones(dt);
+  if(shrinkMode){ shrinkT+=dt; if(shrinkT>=5){ shrinkMode=false; shrinkScale=1.0; } }
+  if(shieldActive){ shieldT+=dt; if(shieldT>=4){ shieldActive=false; if(shieldEl){shieldEl.remove();shieldEl=null;} } }
+  if(shieldEl){ shieldEl.style.left=dogX+'px'; shieldEl.style.top=dogY+'px'; }
+  if(speedBoost){ speedBoostT+=dt; if(speedBoostT>=3){ speedBoost=false; } }
+  if(dogInvisible){ invisibleT+=dt; if(invisibleT>=2.5){ dogInvisible=false; dogWrap.style.opacity='1'; } }
+  if(monkeyKnockedT>=0){ monkeyKnockedT+=dt; if(monkeyKnockedT>1.3) monkeyKnockedT=-1; }
 
-  /* ── Mode tick ──────────────────────────────────────────────────── */
-  if (mode === 'idle')  tickIdle(dt);
-  if (mode === 'run')   tickRun(dt);
-  if (mode === 'belly') tickBelly(dt);
-  if (mode === 'spin')  tickSpin(dt);
-
-  dogWrap.style.left = dogX + 'px';
-  dogWrap.style.top  = dogY + 'px';
-
+  dogWrap.style.left=(dogX+shakeOffsetX)+'px';
+  dogWrap.style.top=dogY+'px';
   requestAnimationFrame(frame);
 }
 
-/* ── IDLE ── */
-function tickIdle(dt) {
-  const dx  = mx - dogX, dy = my - dogY;
-  const d   = Math.hypot(dx, dy);
-  if (d > 72) { dogX += dx * 0.065; dogY += dy * 0.065; }
-
-  if (detectCircle()) { enterMode('spin'); return; }
-
-  facingLeft = mx < dogX;
-  const breathScale = 1 + Math.sin(breathT * 1.55) * 0.018;
-  applyTransform({ scaleY: breathScale });
+function tickIdle(dt){
+  const spd=(speedBoost?1000:500)*dt;
+  if(keys['w']) dogY-=spd;
+  if(keys['s']) dogY+=spd;
+  if(keys['a']){ dogX-=spd; facingLeft=true; }
+  if(keys['d']){ dogX+=spd; facingLeft=false; }
+  dogX=Math.max(60,Math.min(innerWidth-60,dogX));
+  dogY=Math.max(60,Math.min(innerHeight-60,dogY));
+  const b=1+Math.sin(breathT*1.55)*0.018;
+  applyTransform({scaleY:b});
+}
+function tickRun(dt){
+  const dx=runTX-dogX, dy=runTY-dogY;
+  if(Math.hypot(dx,dy)<28)pickRunTarget();
+  dogX+=dx*0.20; dogY+=dy*0.20; facingLeft=dx<0;
+  const ph=modeT*9;
+  applyTransform({bounceY:-(Math.abs(Math.sin(ph))*14), scaleY:1+Math.abs(Math.sin(ph))*0.12});
+  if(modeT>3.6){ enterMode('idle'); applyTransform({}); }
+}
+function tickBelly(dt){
+  dogX+=(mx-dogX)*0.015; dogY+=(my-dogY)*0.015;
+  applyTransform({rotation:88+Math.sin(modeT*7)*8, overrideX:0.88, scaleY:0.88});
+}
+function tickSpin(dt){
+  spinAngle+=dt*540;
+  applyTransform({rotation:spinAngle});
+  if(modeT>1.5){ angleHist=[]; prevAngle=null; enterMode('idle'); applyTransform({}); }
+}
+function tickHappyReact(dt){
+  dogX+=(mx-dogX)*0.03; dogY+=(my-dogY)*0.03;
+  const ph=modeT*9;
+  applyTransform({bounceY:-(Math.abs(Math.sin(ph))*20), scaleY:1+Math.abs(Math.sin(ph))*0.14});
+  if(modeT>2.0){ enterMode('idle'); applyTheme('default'); }
+}
+function tickDislikeReact(dt){
+  dogX+=(mx-dogX)*0.03; dogY+=(my-dogY)*0.03;
+  const decay=Math.max(0,1-modeT/1.4);
+  shakeOffsetX=Math.sin(modeT*38)*10*decay;
+  applyTransform({rotation:Math.sin(modeT*32)*5*decay});
+  if(modeT>1.6){ shakeOffsetX=0; setGlow(false); enterMode('idle'); applyTheme('default'); }
 }
 
-/* ── RUN ── */
-function tickRun(dt) {
-  const dx = runTX - dogX, dy = runTY - dogY;
-  if (Math.hypot(dx, dy) < 28) pickRunTarget();
-  dogX += dx * 0.20; dogY += dy * 0.20;
+/* ── POOP RUN (wasabi) — runs frantically leaving green poop ── */
+function tickPoopRun(dt){
+  const dx=runTX-dogX, dy=runTY-dogY;
+  if(Math.hypot(dx,dy)<28)pickRunTarget();
+  dogX+=dx*0.24; dogY+=dy*0.24; facingLeft=dx<0;
+  const ph=modeT*11;
+  applyTransform({bounceY:-(Math.abs(Math.sin(ph))*16), scaleY:1+Math.abs(Math.sin(ph))*0.15});
 
-  facingLeft    = dx < 0;
-  const ph      = modeT * 9;
-  const bounceY = -(Math.abs(Math.sin(ph)) * 14);
-  const scaleY  = 1 + Math.abs(Math.sin(ph)) * 0.12;
-  applyTransform({ bounceY, scaleY });
-
-  if (modeT > 3.6) { enterMode('idle'); applyTransform({}); }
-}
-
-/* ── BELLY (발라당) ── */
-function tickBelly(dt) {
-  dogX += (mx - dogX) * 0.015;
-  dogY += (my - dogY) * 0.015;
-  const wiggle = Math.sin(modeT * 7) * 8;
-  applyTransform({ rotation: 88 + wiggle, overrideX: 0.88, scaleY: 0.88 });
-}
-
-/* ── SPIN ── */
-function tickSpin(dt) {
-  spinAngle += dt * 540;
-  applyTransform({ rotation: spinAngle });
-  if (modeT > 1.5) {
-    angleHist = []; prevAngle = null;
-    enterMode('idle');
-    applyTransform({});
+  // Drop poop every ~0.42 s
+  const interval=0.42;
+  if(Math.floor(modeT/interval)>Math.floor((modeT-dt)/interval)){
+    spawnPoop(
+      dogX + (facingLeft?1:-1)*50 + (Math.random()-0.5)*16,
+      dogY + 46 + (Math.random()-0.5)*8,
+      '#3d7a12'
+    );
   }
+  if(modeT>4.2){ enterMode('idle'); applyTransform({}); applyTheme('default'); }
+}
+
+/* ── POOP SQUAT (soy sauce) — squats and drops brown poop ── */
+function tickPoopSquat(dt){
+  dogX+=(mx-dogX)*0.02; dogY+=(my-dogY)*0.02;
+  if(modeT<0.55){
+    const t=modeT/0.55;
+    const sq=Math.sin(t*Math.PI)*0.28;
+    applyTransform({scaleY:1-sq, bounceY:sq*28, overrideX:(facingLeft?-1:1)*stretchX});
+  } else {
+    if(!poopDropped){
+      poopDropped=true;
+      spawnPoop(dogX+(facingLeft?30:-30), dogY+52, '#3d1e08');
+      spawnPoop(dogX+(facingLeft?45:-15)+(Math.random()-0.5)*14, dogY+50, '#2e1606');
+    }
+    const t=Math.min((modeT-0.55)/0.55,1);
+    const bounce=Math.sin(t*Math.PI)*0.12;
+    applyTransform({scaleY:1+bounce*0.5, bounceY:-bounce*14, overrideX:(facingLeft?-1:1)*stretchX});
+  }
+  if(modeT>1.8){ enterMode('idle'); applyTransform({}); applyTheme('default'); }
+}
+
+/* ── SNEEZE (pepper) — head bobs + spray particles ── */
+function tickSneeze(dt){
+  dogX+=(mx-dogX)*0.02; dogY+=(my-dogY)*0.02;
+  const decay=Math.max(0,1-modeT/1.3);
+  const phase=modeT*22;
+  const bob=Math.sin(phase)*14*decay;
+  const faceDir=facingLeft?1:-1;   // which way the face points
+  shakeOffsetX=bob*faceDir;
+
+  applyTransform({
+    scaleY: 1+Math.abs(Math.sin(phase))*0.08*decay,
+    overrideX: (facingLeft?-1:1)*stretchX
+  });
+
+  // Fire sneeze particle burst at each peak
+  const burstThresh=0.88;
+  const prevPhase=(modeT-dt)*22;
+  const peakNow = Math.sin(phase)>burstThresh;
+  const peakPrev= Math.sin(prevPhase)>burstThresh;
+  if(peakNow&&!peakPrev&&sneezeCount<5&&decay>0.15){
+    sneezeCount++;
+    const originX=dogX+faceDir*90;
+    const originY=dogY-8;
+    for(let i=0;i<10;i++){
+      const angle=(faceDir>0?0:Math.PI)+(Math.random()-0.5)*0.9;
+      const spd=5+Math.random()*5;
+      particles.push(new Particle(
+        originX+(Math.random()-0.5)*18,
+        originY+(Math.random()-0.5)*18,
+        Math.cos(angle)*spd, Math.sin(angle)*spd-1.5,
+        `rgba(${215+Math.floor(Math.random()*40)},${215+Math.floor(Math.random()*40)},${215+Math.floor(Math.random()*40)},0.85)`,
+        2+Math.random()*2.8
+      ));
+    }
+    // Tiny dark pepper specks
+    for(let i=0;i<5;i++){
+      const angle=(faceDir>0?0:Math.PI)+(Math.random()-0.5)*1.1;
+      const spd=3+Math.random()*3;
+      particles.push(new Particle(
+        originX+(Math.random()-0.5)*10,
+        originY+(Math.random()-0.5)*10,
+        Math.cos(angle)*spd, Math.sin(angle)*spd,
+        `rgba(30,20,10,0.80)`, 1.5+Math.random()*1.5
+      ));
+    }
+  }
+
+  if(modeT>1.6){ shakeOffsetX=0; enterMode('idle'); applyTransform({}); applyTheme('default'); }
+}
+
+/* ── STUNNED (monkey bonk) ── */
+function tickStunned(dt){
+  dogX+=(mx-dogX)*0.01; dogY+=(my-dogY)*0.01;
+  applyTransform({
+    scaleY: 1-Math.sin(modeT*12)*0.16,
+    rotation: Math.sin(modeT*16)*6
+  });
+  if(modeT>1.5){ enterMode('idle'); applyTransform({}); }
 }
 
 requestAnimationFrame(frame);
 
+/* ════════════════════════════════════════════════════════════════════
+   PARTICLE + POOP SYSTEM
+   ════════════════════════════════════════════════════════════════════ */
+const pCanvas=document.getElementById('particle-canvas');
+const pCtx=pCanvas.getContext('2d');
+function resizeCanvas(){ pCanvas.width=innerWidth; pCanvas.height=innerHeight; }
+resizeCanvas(); window.addEventListener('resize',resizeCanvas);
+
+class Particle{
+  constructor(x,y,vx,vy,color,r){
+    this.x=x;this.y=y;this.vx=vx;this.vy=vy;this.color=color;this.r=r;
+    this.life=1.0; this.decay=0.013+Math.random()*0.018;
+  }
+  update(){ this.x+=this.vx;this.y+=this.vy;this.vy+=0.28;this.vx*=0.97;this.life-=this.decay; }
+  draw(ctx){
+    ctx.save(); ctx.globalAlpha=Math.max(0,this.life*this.life);
+    ctx.fillStyle=this.color; ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r*Math.max(0.2,this.life),0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha*=0.45; ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.beginPath();
+    ctx.arc(this.x-this.r*.3,this.y-this.r*.35,this.r*.32,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  isDead(){ return this.life<=0; }
+}
+
+class Poop{
+  constructor(x,y,color){
+    this.x=x; this.y=y; this.color=color;
+    this.life=1.0; this.decay=0.0028;
+    this.size=9+Math.random()*4;
+    this.tilt=(Math.random()-0.5)*0.4;
+  }
+  update(){ this.life-=this.decay; }
+  draw(ctx){
+    const {x,y,size:s,color:c,tilt}=this;
+    ctx.save();
+    ctx.translate(x,y); ctx.rotate(tilt);
+    ctx.globalAlpha=Math.min(1,this.life*4);
+
+    // Shadow
+    ctx.fillStyle='rgba(0,0,0,0.12)';
+    ctx.beginPath(); ctx.ellipse(0, s*3.4, s*1.1, s*0.38, 0, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle=c;
+    // Bottom tier
+    ctx.beginPath(); ctx.ellipse(0, s*2.5, s*1.05, s*0.72, 0, 0, Math.PI*2); ctx.fill();
+    // Middle tier
+    ctx.beginPath(); ctx.ellipse(s*0.1, s*1.3, s*0.82, s*0.60, 0, 0, Math.PI*2); ctx.fill();
+    // Upper tier
+    ctx.beginPath(); ctx.ellipse(0, s*0.3, s*0.60, s*0.50, 0, 0, Math.PI*2); ctx.fill();
+    // Tip swirl
+    ctx.beginPath(); ctx.ellipse(s*0.05, -s*0.5, s*0.35, s*0.42, 0.15, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(s*0.0, -s*1.1, s*0.18, s*0.22, 0, 0, Math.PI*2); ctx.fill();
+
+    // Shine
+    const shimmer=c==='#3d7a12'?'rgba(180,255,100,0.22)':'rgba(180,100,40,0.18)';
+    ctx.fillStyle=shimmer;
+    ctx.beginPath(); ctx.ellipse(-s*0.4, s*2.0, s*0.28, s*0.16, -0.5, 0, Math.PI*2); ctx.fill();
+
+    // Tiny eyes
+    ctx.fillStyle='rgba(0,0,0,0.55)';
+    ctx.beginPath(); ctx.arc(-s*0.28, s*2.38, s*0.14, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc( s*0.28, s*2.38, s*0.14, 0, Math.PI*2); ctx.fill();
+
+    ctx.restore();
+  }
+  isDead(){ return this.life<=0; }
+}
+
+let particles=[], poops=[];
+
+function burstAt(x,y,color,count,speed=4){
+  for(let i=0;i<count;i++){
+    const angle=(i/count)*Math.PI*2+Math.random()*0.5;
+    const spd=speed*(0.6+Math.random()*0.8);
+    particles.push(new Particle(
+      x+(Math.random()-.5)*20, y+(Math.random()-.5)*14,
+      Math.cos(angle)*spd, Math.sin(angle)*spd-1.5,
+      color, 3.5+Math.random()*3
+    ));
+  }
+}
+
+function spawnPoop(x,y,color){
+  poops.push(new Poop(x,y,color));
+}
+
+function renderLoop(){
+  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  // Draw mustard puddles
+  puddles=puddles.filter(p=>p.life>0);
+  for(const p of puddles){
+    p.life-=0.00012;
+    pCtx.save();
+    pCtx.globalAlpha=Math.min(1,p.life)*0.55;
+    pCtx.fillStyle='#f5d840';
+    pCtx.beginPath();
+    pCtx.ellipse(p.x,p.y,p.r,p.r*0.42,0,0,Math.PI*2);
+    pCtx.fill();
+    pCtx.globalAlpha=Math.min(1,p.life)*0.25;
+    pCtx.strokeStyle='#c8a010';
+    pCtx.lineWidth=3;
+    pCtx.stroke();
+    pCtx.restore();
+  }
+  poops=poops.filter(p=>!p.isDead());
+  for(const p of poops){ p.update(); p.draw(pCtx); }
+  particles=particles.filter(p=>!p.isDead());
+  for(const p of particles){ p.update(); p.draw(pCtx); }
+  requestAnimationFrame(renderLoop);
+}
+requestAnimationFrame(renderLoop);
+
+/* ════════════════════════════════════════════════════════════════════
+   CONDIMENT SYSTEM
+   ════════════════════════════════════════════════════════════════════ */
+document.addEventListener('mousemove',e=>{ mx=e.clientX; my=e.clientY; });
+document.addEventListener('touchmove',e=>{
+  const t=e.changedTouches[0]; mx=t.clientX; my=t.clientY;
+},{passive:true});
+let activeCondiment=null, reactionFired=false, lastReactionTime=0, sprayTick=0;
+let dragBottleEl=null;
+
+const CONDIMENT_COLORS={
+  ketchup: ()=>`hsl(${353+Math.random()*10},88%,${44+Math.random()*14}%)`,
+  mustard: ()=>`hsl(${48 +Math.random()*10},94%,${52+Math.random()*12}%)`,
+  wasabi:  ()=>`hsl(${110+Math.random()*15},80%,${40+Math.random()*14}%)`,
+  soy:     ()=>`hsl(${22 +Math.random()*10},70%,${18+Math.random()*10}%)`,
+  pepper:  ()=>`hsl(${0  +Math.random()*10}, 0%,${25+Math.random()*20}%)`,
+};
+
+function getBottleTip(el){
+  const r=el.getBoundingClientRect();
+  return {x:r.left+r.width/2, y:r.top+8};
+}
+
+function emitSpray(condiment,btnEl){
+  for(let i=0;i<5;i++){
+    const angle=(Math.random()*160-80)*Math.PI/180;
+    const speed=3+Math.random()*4;
+    particles.push(new Particle(
+      mx+(Math.random()-.5)*14, my+(Math.random()-.5)*14,
+      Math.sin(angle)*speed,
+      Math.cos(angle)*speed*0.5+1+Math.random()*1.5,
+      CONDIMENT_COLORS[condiment](), 3.5+Math.random()*2.5
+    ));
+  }
+}
+
+function knockbackMonkeys(){
+  // 원래 원숭이
+  const dx=monkeyX-dogX, dy=monkeyY-dogY, d=Math.hypot(dx,dy)||1;
+  monkeyKnockVX=(dx/d)*480; monkeyKnockVY=(dy/d)*480; monkeyKnockedT=0;
+  // 클론들
+  clones.forEach(c=>{
+    const cx=c.x-dogX, cy=c.y-dogY, cd=Math.hypot(cx,cy)||1;
+    c.knockVX=(cx/cd)*480; c.knockVY=(cy/cd)*480; c.knockedT=0;
+  });
+}
+
+function triggerReaction(cond){
+  if(reactionFired)return;
+  reactionFired=true; activeCondiment=null;
+  document.querySelectorAll('.bottle-wrap').forEach(b=>b.classList.remove('pouring'));
+
+  switch(cond){
+    case 'ketchup': // 속도 부스트 3초
+      speedBoost=true; speedBoostT=0;
+      burstAt(dogX,dogY,'#ff5060',14,6);
+      burstAt(dogX,dogY,'#ff9090',8,4);
+      break;
+    case 'mustard': // 미끄러운 웅덩이 생성
+      puddles.push({x:dogX, y:dogY, r:80, life:1});
+      burstAt(dogX,dogY,'#f5d840',14,5);
+      burstAt(dogX,dogY,'#ffee80',8,3);
+      break;
+    case 'wasabi': // 랜덤 순간이동
+      burstAt(dogX,dogY,'#70e030',12,5);
+      dogX=80+Math.random()*(innerWidth-160);
+      dogY=80+Math.random()*(innerHeight-160);
+      burstAt(dogX,dogY,'#70e030',14,6);
+      break;
+    case 'soy': // 투명화 2.5초
+      dogInvisible=true; invisibleT=0;
+      dogWrap.style.opacity='0.12';
+      burstAt(dogX,dogY,'rgba(30,20,10,0.9)',10,4);
+      break;
+    case 'pepper': // 넉백 폭발
+      burstAt(dogX,dogY,'rgba(220,220,220,0.9)',20,9);
+      burstAt(dogX,dogY,'rgba(180,180,180,0.7)',12,6);
+      knockbackMonkeys();
+      break;
+  }
+}
+
+function condimentLoop(){
+  if(activeCondiment){
+    sprayTick++;
+    const btn=document.getElementById('btn-'+activeCondiment);
+    if(sprayTick%2===0&&btn) emitSpray(activeCondiment,btn);
+    if(!reactionFired&&isOnDog(mx,my)) triggerReaction(activeCondiment);
+    if(dragBottleEl){ dragBottleEl.style.left=mx+'px'; dragBottleEl.style.top=my+'px'; }
+  }
+  requestAnimationFrame(condimentLoop);
+}
+requestAnimationFrame(condimentLoop);
+
+document.querySelectorAll('.bottle-wrap').forEach(btn=>{
+  const cond=btn.dataset.cond;
+
+  btn.addEventListener('mousedown',e=>{
+    e.stopPropagation();
+    if(performance.now()-lastReactionTime<1800)return;
+    activeCondiment=cond; reactionFired=false;
+    btn.classList.add('pouring');
+  });
+  btn.addEventListener('touchstart',e=>{
+    e.stopPropagation();
+    if(performance.now()-lastReactionTime<1800)return;
+    activeCondiment=cond; reactionFired=false;
+    btn.classList.add('pouring');
+    const t=e.touches[0]; mx=t.clientX; my=t.clientY;
+  },{passive:true});
+});
+
+document.addEventListener('mouseup',()=>{
+  if(activeCondiment){
+    document.querySelectorAll('.bottle-wrap').forEach(b=>b.classList.remove('pouring'));
+    activeCondiment=null; lastReactionTime=performance.now();
+  }
+});
+document.addEventListener('touchend',()=>{
+  if(activeCondiment){
+    document.querySelectorAll('.bottle-wrap').forEach(b=>b.classList.remove('pouring'));
+    activeCondiment=null; lastReactionTime=performance.now();
+  }
+},{passive:true});
+
+/* ════════════════════════════════════════════════════════════════════
+   MONKEY SYSTEM
+   ════════════════════════════════════════════════════════════════════ */
+const monkeyWrap = document.getElementById('monkey-wrap');
+const monkeySvg  = document.getElementById('monkey-svg');
+let monkeyX = 0, monkeyY = 0;
+const mkHomeX = () => innerWidth - 130;
+const mkHomeY = () => innerHeight / 2;
+let monkeyMode = 'idle';  // idle | spinning | chasing | hitting | returning
+let mkT = 0, sirenT = 0;
+let mkFacing = -1;   // -1 = face left, 1 = face right
+let mkHitDone = false, mkSpinAngle = 0;
+
+monkeyX = mkHomeX(); monkeyY = mkHomeY();
+monkeyWrap.style.left = monkeyX+'px';
+monkeyWrap.style.top  = monkeyY+'px';
+
+function enterMonkeyMode(m){
+  monkeyMode=m; mkT=0; mkHitDone=false; mkSpinAngle=0;
+}
+
+function hitDog(){
+  if(dogInvisible) return;
+  if(shieldActive){
+    shieldActive=false;
+    if(shieldEl){ shieldEl.remove(); shieldEl=null; }
+    const block=document.createElement('div');
+    block.textContent='BLOCK!';
+    block.style.cssText=`position:fixed;left:${dogX-40}px;top:${dogY-72}px;`+
+      `font-family:'Press Start 2P',monospace;font-size:18px;color:#44DDFF;`+
+      `text-shadow:2px 2px 0 #0088CC,-2px -2px 0 #0088CC;z-index:400;`+
+      `pointer-events:none;transition:transform 0.5s ease-out,opacity 0.5s ease-out;`;
+    document.body.appendChild(block);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      block.style.transform='translateY(-28px) scale(1.2)'; block.style.opacity='0';
+    }));
+    setTimeout(()=>block.remove(),600);
+    return;
+  }
+  if(['belly','stunned'].includes(mode)) return;
+  enterMode('stunned');
+  burstAt(dogX, dogY-20, '#FFEE00', 10, 6);
+  burstAt(dogX, dogY-20, '#FF8800', 8,  4);
+  // Star ring around dog head
+  for(let i=0;i<8;i++){
+    const a=(i/8)*Math.PI*2;
+    particles.push(new Particle(
+      dogX+Math.cos(a)*38, dogY-12+Math.sin(a)*22,
+      Math.cos(a+Math.PI/2)*1.8, Math.sin(a+Math.PI/2)*1.8-1.2,
+      `hsl(${42+Math.random()*28},100%,55%)`, 6+Math.random()*3
+    ));
+  }
+  // BONK text DOM element
+  const bonk=document.createElement('div');
+  bonk.textContent='BONK!';
+  bonk.style.cssText=`position:fixed;left:${dogX-36}px;top:${dogY-72}px;`+
+    `font-family:'Press Start 2P',monospace;font-size:20px;color:#FF5500;`+
+    `text-shadow:2px 2px 0 #FFE000,-2px -2px 0 #FFE000;z-index:400;`+
+    `pointer-events:none;transition:transform 0.55s ease-out,opacity 0.55s ease-out;`;
+  document.body.appendChild(bonk);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    bonk.style.transform='translateY(-28px) scale(1.25)';
+    bonk.style.opacity='0';
+  }));
+  setTimeout(()=>bonk.remove(), 650);
+}
+
+function checkPuddle(x,y){
+  for(const p of puddles) if(Math.hypot(x-p.x,y-p.y)<p.r) return true;
+  return false;
+}
+
+function tickMonkey(dt){
+  mkT+=dt; sirenT+=dt;
+
+  // 넉백 중이면 날아가고 종료
+  if(monkeyKnockedT>=0){
+    monkeyX+=monkeyKnockVX*dt; monkeyY+=monkeyKnockVY*dt;
+    monkeyKnockVX*=0.80; monkeyKnockVY*=0.80;
+    monkeyX=Math.max(0,Math.min(innerWidth,monkeyX));
+    monkeyY=Math.max(0,Math.min(innerHeight,monkeyY));
+    monkeySvg.style.transform=`scaleX(${mkFacing}) rotate(${mkT*600}deg)`;
+    monkeyWrap.style.left=monkeyX+'px'; monkeyWrap.style.top=monkeyY+'px';
+    return;
+  }
+  // 미끄러짐 중이면 슬라이드
+  if(monkeySlipping){
+    monkeySlipT+=dt;
+    monkeyX+=monkeySlipVX*dt; monkeyY+=monkeySlipVY*dt;
+    monkeySlipVX*=0.88; monkeySlipVY*=0.88;
+    monkeyX=Math.max(0,Math.min(innerWidth,monkeyX));
+    monkeyY=Math.max(0,Math.min(innerHeight,monkeyY));
+    monkeySvg.style.transform=`scaleX(${mkFacing}) rotate(${Math.sin(monkeySlipT*18)*20}deg)`;
+    monkeyWrap.style.left=monkeyX+'px'; monkeyWrap.style.top=monkeyY+'px';
+    if(monkeySlipT>1.5) monkeySlipping=false;
+    return;
+  }
+
+  const chasing=['spinning','chasing','hitting'].includes(monkeyMode);
+  monkeyWrap.style.pointerEvents=monkeyMode==='idle'?'auto':'none';
+
+  // Siren flash
+  const sg=document.getElementById('mk-siren-glow');
+  if(sg){
+    const sa=chasing?(Math.sin(sirenT*9)*0.5+0.5)*0.65:0;
+    sg.setAttribute('opacity', sa.toFixed(3));
+    sg.setAttribute('fill', `rgba(255,40,0,${sa.toFixed(3)})`);
+    monkeySvg.style.filter=chasing
+      ?`drop-shadow(0 0 ${(sa*18).toFixed(1)}px rgba(255,60,0,${(sa*0.7).toFixed(2)})) drop-shadow(0 6px 16px rgba(0,0,0,0.20))`
+      :`drop-shadow(0 6px 16px rgba(0,0,0,0.20))`;
+  }
+
+  switch(monkeyMode){
+    case 'idle':{
+      monkeyX=mkHomeX(); monkeyY=mkHomeY()+Math.sin(mkT*1.6)*3;
+      mkFacing=-1;
+      monkeySvg.style.transform=`scaleX(-1)`;
+      if(keys['ArrowUp']||keys['ArrowDown']||keys['ArrowLeft']||keys['ArrowRight']) enterMonkeyMode('chasing');
+      break;
+    }
+    case 'spinning':{
+      mkSpinAngle+=dt*820;
+      monkeySvg.style.transform=`scaleX(-1) rotate(${mkSpinAngle}deg)`;
+      if(mkT>0.9) enterMonkeyMode('chasing');
+      break;
+    }
+    case 'chasing':{
+      if(cloneMode){
+        const dx=dogX-monkeyX, dy=dogY-monkeyY, dist=Math.hypot(dx,dy);
+        mkFacing=dx>=0?1:-1;
+        if(dist>58){ monkeyX+=(dx/dist)*250*dt; monkeyY+=(dy/dist)*250*dt; }
+        else { enterMonkeyMode('hitting'); break; }
+        const bY=-(Math.abs(Math.sin(mkT*11))*14);
+        monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
+        break;
+      }
+      const spd=250*dt;
+      if(keys['ArrowUp']) monkeyY-=spd;
+      if(keys['ArrowDown']) monkeyY+=spd;
+      if(keys['ArrowLeft']){ monkeyX-=spd; mkFacing=-1; }
+      if(keys['ArrowRight']){ monkeyX+=spd; mkFacing=1; }
+      monkeyX=Math.max(0,Math.min(innerWidth,monkeyX));
+      monkeyY=Math.max(0,Math.min(innerHeight,monkeyY));
+      if(!keys['ArrowLeft']&&!keys['ArrowRight']) mkFacing=(dogX-monkeyX)>=0?1:-1;
+      // 웅덩이 밟으면 미끄러짐
+      if(checkPuddle(monkeyX,monkeyY)){
+        const pdx=dogX-monkeyX, pdy=dogY-monkeyY, pd=Math.hypot(pdx,pdy)||1;
+        monkeySlipping=true; monkeySlipT=0;
+        monkeySlipVX=(pdx/pd)*360; monkeySlipVY=(pdy/pd)*360;
+        break;
+      }
+      const ddx=dogX-monkeyX, ddy=dogY-monkeyY;
+      if(Math.hypot(ddx,ddy)<(shrinkMode?22:58)){ enterMonkeyMode('hitting'); break; }
+      const bY=-(Math.abs(Math.sin(mkT*11))*14);
+      monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
+      break;
+    }
+    case 'hitting':{
+      const prog=Math.min(mkT/0.55,1);
+      const lunge=Math.sin(prog*Math.PI)*(mkFacing>0?32:-32);
+      const bY=-Math.sin(prog*Math.PI)*12;
+      monkeySvg.style.transform=`scaleX(${mkFacing}) rotate(${lunge}deg) translateY(${bY}px)`;
+      if(!mkHitDone&&mkT>0.22){ mkHitDone=true; hitDog(); }
+      if(mkT>0.78) enterMonkeyMode(cloneMode?'chasing':'returning');
+      break;
+    }
+    case 'returning':{
+      const dx=mkHomeX()-monkeyX, dy=mkHomeY()-monkeyY;
+      monkeyX+=dx*0.10; monkeyY+=dy*0.10;
+      mkFacing=dx>=0?1:-1;
+      const bY=-(Math.abs(Math.sin(mkT*9))*8);
+      monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
+      if(Math.hypot(dx,dy)<5){ monkeyX=mkHomeX(); monkeyY=mkHomeY(); enterMonkeyMode('idle'); }
+      break;
+    }
+  }
+  monkeyWrap.style.left=monkeyX+'px';
+  monkeyWrap.style.top=monkeyY+'px';
+}
+
+function startShrink(){
+  shrinkMode=true; shrinkT=0; shrinkScale=1/3;
+}
+
+function startShield(){
+  shieldActive=true; shieldT=0;
+  shieldEl=document.createElement('div');
+  shieldEl.id='shield-bubble';
+  shieldEl.style.left=dogX+'px'; shieldEl.style.top=dogY+'px';
+  document.body.appendChild(shieldEl);
+}
+
+function startClones(){
+  cloneMode=true; cloneT=0;
+  // 화면 세 귀퉁이에서 출발
+  const starts=[
+    {x:80,               y:80},
+    {x:innerWidth-80,    y:80},
+    {x:innerWidth/2,     y:innerHeight-80},
+  ];
+  clones=starts.map((p,i)=>({
+    x:p.x, y:p.y,
+    facing:-1, hitting:false, hitT:0, hitDone:false,
+    baseAngle:(i/3)*Math.PI*2,
+    knockVX:0, knockVY:0, knockedT:-1
+  }));
+  cloneDivs=clones.map(()=>{
+    const el=monkeyWrap.cloneNode(true);
+    el.removeAttribute('id');
+    el.style.position='fixed';
+    el.style.pointerEvents='none';
+    el.style.opacity='0.9';
+    el.style.filter='hue-rotate(140deg) brightness(1.2)';
+    document.body.appendChild(el);
+    return el;
+  });
+  burstAt(monkeyX,monkeyY,'#FF4400',18,7);
+  if(monkeyMode!=='chasing') enterMonkeyMode('chasing');
+}
+
+function tickClones(dt){
+  if(!cloneMode) return;
+  cloneT+=dt;
+  const CLONE_SPD=420;
+  for(let i=0;i<clones.length;i++){
+    const c=clones[i], el=cloneDivs[i];
+    const svg=el.querySelector('svg');
+    // 클론 넉백
+    if(c.knockedT>=0){
+      c.knockedT+=dt;
+      c.x+=c.knockVX*dt; c.y+=c.knockVY*dt;
+      c.knockVX*=0.80; c.knockVY*=0.80;
+      c.x=Math.max(0,Math.min(innerWidth,c.x));
+      c.y=Math.max(0,Math.min(innerHeight,c.y));
+      if(svg) svg.style.transform=`scaleX(${c.facing}) rotate(${c.knockedT*600}deg)`;
+      el.style.left=c.x+'px'; el.style.top=c.y+'px';
+      if(c.knockedT>1.3) c.knockedT=-1;
+      continue;
+    }
+    if(c.hitting){
+      c.hitT+=dt;
+      const prog=Math.min(c.hitT/0.45,1);
+      const lunge=Math.sin(prog*Math.PI)*(c.facing>0?36:-36);
+      const bY=-Math.sin(prog*Math.PI)*12;
+      if(svg) svg.style.transform=`scaleX(${c.facing}) rotate(${lunge}deg) translateY(${bY}px)`;
+      if(!c.hitDone&&c.hitT>0.18){ c.hitDone=true; hitDog(); }
+      if(c.hitT>0.65){ c.hitting=false; c.hitT=0; c.hitDone=false; }
+    } else {
+      // 포위 반경: 처음엔 넓게 벌렸다가 3초 이후 완전히 좁힘
+      const flankR=Math.max(0, 110*(1-cloneT/3));
+      const flankAngle=c.baseAngle+cloneT*1.4;
+      const targetX=dogX+Math.cos(flankAngle)*flankR;
+      const targetY=dogY+Math.sin(flankAngle)*flankR;
+      const dx=targetX-c.x, dy=targetY-c.y, dist=Math.hypot(dx,dy);
+      c.facing=(dogX-c.x)>=0?1:-1;
+      if(checkPuddle(c.x,c.y)){
+        c.knockVX=(dx/dist)*360; c.knockVY=(dy/dist)*360; c.knockedT=0;
+      } else if(dist>(shrinkMode?20:52)){ c.x+=(dx/dist)*CLONE_SPD*dt; c.y+=(dy/dist)*CLONE_SPD*dt; }
+      else { c.hitting=true; c.hitT=0; c.hitDone=false; }
+      // 빠른 달리기 바운스
+      const bY=-(Math.abs(Math.sin((cloneT*14)+i*2.1))*16);
+      if(svg) svg.style.transform=`scaleX(${c.facing}) translateY(${bY}px)`;
+    }
+    // 화면 안으로 clamp
+    c.x=Math.max(0,Math.min(innerWidth,c.x));
+    c.y=Math.max(0,Math.min(innerHeight,c.y));
+    el.style.left=c.x+'px';
+    el.style.top=c.y+'px';
+  }
+  if(cloneT>=CLONE_DURATION){
+    cloneDivs.forEach(el=>el.remove());
+    cloneDivs=[]; clones=[];
+    cloneMode=false;
+    enterMonkeyMode('returning');
+  }
+}
+
+monkeyWrap.addEventListener('click',e=>{
+  e.stopPropagation();
+  if(monkeyMode==='idle') enterMonkeyMode('spinning');
+});
+monkeyWrap.addEventListener('mousedown',e=>e.stopPropagation());
+monkeyWrap.addEventListener('touchstart',e=>{
+  e.stopPropagation();
+  if(monkeyMode==='idle') enterMonkeyMode('spinning');
+},{passive:true});
 
 /* ════════════════════════════════════════════════════════════════════
    CAMERA TOGGLE
    ════════════════════════════════════════════════════════════════════ */
-const camWrap   = document.getElementById('cam-wrap');
-const camToggle = document.getElementById('cam-toggle');
-camToggle.addEventListener('click', () => {
-  const hidden = camWrap.style.display === 'none';
-  camWrap.style.display = hidden ? '' : 'none';
+const camWrap=document.getElementById('cam-wrap');
+document.getElementById('cam-toggle').addEventListener('click',()=>{
+  camWrap.style.display=camWrap.style.display==='none'?'':'none';
 });
 
-
 /* ════════════════════════════════════════════════════════════════════
-   MEDIAPIPE — FACE EXPRESSION → MUSTARD COLOUR
+   MEDIAPIPE
    ════════════════════════════════════════════════════════════════════ */
-async function initFace() {
+async function initFace(){
   let fl;
-  try {
-    const fsr = await FilesetResolver.forVisionTasks(
+  try{
+    const fsr=await FilesetResolver.forVisionTasks(
       "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
     );
-    fl = await FaceLandmarker.createFromOptions(fsr, {
-      baseOptions: {
-        modelAssetPath:
-          "https://storage.googleapis.com/mediapipe-models/face_landmarker/" +
-          "face_landmarker/float16/1/face_landmarker.task",
-        delegate: "GPU",
+    fl=await FaceLandmarker.createFromOptions(fsr,{
+      baseOptions:{
+        modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+        delegate:"GPU"
       },
-      outputFaceBlendshapes: true,
-      runningMode: "VIDEO",
-      numFaces: 1,
+      outputFaceBlendshapes:true, runningMode:"VIDEO", numFaces:1
     });
-  } catch (err) {
-    console.warn("[face] init failed:", err);
-    camWrap.style.display = camToggle.style.display = 'none';
-    return;
-  }
-
-  const video = document.getElementById('webcam');
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 320, height: 240, facingMode: 'user' },
+    handLandmarker=await HandLandmarker.createFromOptions(fsr,{
+      baseOptions:{
+        modelAssetPath:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+        delegate:"GPU"
+      },
+      runningMode:"VIDEO", numHands:2
     });
-    video.srcObject = stream;
-    await new Promise(r => video.addEventListener('loadeddata', r, { once: true }));
-  } catch (err) {
-    console.warn("[face] camera denied:", err);
-    camWrap.style.display = camToggle.style.display = 'none';
-    return;
-  }
+  }catch(e){ console.warn("[face]",e); camWrap.style.display='none'; return; }
 
-  let lastVideoT = -1, tick = 0;
-  function detect() {
+  const video=document.getElementById('webcam');
+  try{
+    video.srcObject=await navigator.mediaDevices.getUserMedia({video:{width:320,height:240,facingMode:'user'}});
+    await new Promise(r=>video.addEventListener('loadeddata',r,{once:true}));
+  }catch(e){ console.warn("[cam]",e); camWrap.style.display='none'; return; }
+
+  let lastT=-1,tick=0;
+  function detect(){
     tick++;
-    if (tick % 6 === 0 && video.currentTime !== lastVideoT) {
-      lastVideoT = video.currentTime;
-      const res  = fl.detectForVideo(video, performance.now());
-      if (res.faceBlendshapes?.[0]) {
-        const emo = classify(res.faceBlendshapes[0].categories);
-        if (emo !== currentEmotion) {
-          applyTheme(emo);
-          if (mode === 'run') setGlow(true);
+    if(tick%6===0&&video.currentTime!==lastT){
+      lastT=video.currentTime;
+      const res=fl.detectForVideo(video,performance.now());
+      if(res.faceBlendshapes?.[0]){
+        const emo=classify(res.faceBlendshapes[0].categories);
+        const reacting=['happy_react','dislike_react','poop_run','poop_squat','sneeze','stunned'].includes(mode);
+        if(emo!==currentEmotion&&!reacting){ applyTheme(emo); if(mode==='run')setGlow(true); }
+      }
+      if(handLandmarker){
+        const hRes=handLandmarker.detectForVideo(video,performance.now());
+        const raw=(hRes.landmarks??[]).map(lms=>({
+          x:(1-lms[8].x)*innerWidth, y:lms[8].y*innerHeight
+        })).sort((a,b)=>a.x-b.x); // leftmost = player1
+        if(raw.length>=1){
+          handDetected=true;
+          mx=raw[0].x; my=raw[0].y;
+          cursorDot.style.left=mx+'px'; cursorDot.style.top=my+'px';
+          cursorDot.classList.add('hand-active');
+        }else{
+          handDetected=false;
+          cursorDot.classList.remove('hand-active');
+        }
+        if(raw.length>=2){
+          hand2Detected=true;
+          hand2X=raw[1].x; hand2Y=raw[1].y;
+          cursorDot2.style.left=hand2X+'px'; cursorDot2.style.top=hand2Y+'px';
+          cursorDot2.classList.add('hand2-active');
+        }else{
+          hand2Detected=false;
+          cursorDot2.classList.remove('hand2-active');
         }
       }
     }
@@ -700,98 +1318,22 @@ async function initFace() {
   }
   requestAnimationFrame(detect);
 }
-
-function classify(cats) {
-  const g = n => cats.find(c => c.categoryName === n)?.score ?? 0;
-  const happy     = (g('mouthSmileLeft') + g('mouthSmileRight')) * .50
-                  + (g('cheekSquintLeft') + g('cheekSquintRight')) * .25;
-  const angry     = (g('browDownLeft') + g('browDownRight')) * .55
-                  + (g('mouthPressLeft') + g('mouthPressRight')) * .45;
-  const disgusted = (g('noseSneerLeft') + g('noseSneerRight')) * .65
-                  + g('mouthShrugLower') * .35;
-  const surprised = g('jawOpen') * .55
-                  + (g('eyeWideLeft') + g('eyeWideRight')) * .45;
-  const sad       = g('browInnerUp') * .40
-                  + (g('mouthFrownLeft') + g('mouthFrownRight')) * .60;
-  const scores = { happy, angry, disgusted, surprised, sad };
-  const [top, score] = Object.entries(scores).sort((a, b) => b[1] - a[1])[0];
-  return score > 0.30 ? top : 'default';
+function classify(cats){
+  const g=n=>cats.find(c=>c.categoryName===n)?.score??0;
+  const happy    =(g('mouthSmileLeft')+g('mouthSmileRight'))*.50+(g('cheekSquintLeft')+g('cheekSquintRight'))*.25;
+  const angry    =(g('browDownLeft')+g('browDownRight'))*.55+(g('mouthPressLeft')+g('mouthPressRight'))*.45;
+  const disgusted=(g('noseSneerLeft')+g('noseSneerRight'))*.65+g('mouthShrugLower')*.35;
+  const surprised= g('jawOpen')*.55+(g('eyeWideLeft')+g('eyeWideRight'))*.45;
+  const sad      = g('browInnerUp')*.40+(g('mouthFrownLeft')+g('mouthFrownRight'))*.60;
+  const scores={happy,angry,disgusted,surprised,sad};
+  const [top,score]=Object.entries(scores).sort((a,b)=>b[1]-a[1])[0];
+  return score>0.30?top:'default';
 }
-
 initFace();
-
 
 /* ════════════════════════════════════════════════════════════════════
    PIXEL CHAT BOX
    ════════════════════════════════════════════════════════════════════ */
-const chatInput    = document.getElementById('chat-input');
-const chatSend     = document.getElementById('chat-send');
-const chatMessages = document.getElementById('chat-messages');
-
-chatInput.addEventListener('mousedown', e => e.stopPropagation());
-chatInput.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
-
-const DOG_REPLIES = {
-  dog:     ["Woof woof! I'm already a dog!", "Arf! Still a hotdog!"],
-  cat:     ["Mrow...? Still smells like mustard.", "Meow? Nope still a dog."],
-  fox:     ["What does the fox say? Still woof.", "Sausage fox activated!"],
-  rabbit:  ["Hippity hop! I'm a sausage bunny.", "My legs are too short!"],
-  bear:    ["ROAR WOOF ROAR! Beardog!"],
-  dragon:  ["*breathes mustard* woof.", "Dragsausage!"],
-  wolf:    ["AWOOO-woof! Sausage wolf!"],
-  hamster: ["Tiny hotdog hamster... woof."],
-  lion:    ["King of the hotdogs!"],
-  hotdog:  ["That's me!! Woof!", "I AM the hotdog!!"],
-  default: [
-    "Woof! I tried to be that!",
-    "Interesting choice! *wags tail*",
-    "I don't know that animal but I'm trying!",
-    "Woof woof! Transform!",
-    "My mustard is wagging with excitement!",
-  ],
-};
-
-function getDogReply(animal) {
-  const key = animal.toLowerCase().trim();
-  for (const [k, replies] of Object.entries(DOG_REPLIES)) {
-    if (key.includes(k)) return replies[Math.floor(Math.random() * replies.length)];
-  }
-  const fb = DOG_REPLIES.default;
-  return fb[Math.floor(Math.random() * fb.length)];
-}
-
-function addMessage(text, who) {
-  chatMessages.querySelectorAll('.blink').forEach(el => el.remove());
-  const div = document.createElement('div');
-  div.className = `msg ${who}`;
-  if (who === 'dog') {
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    const blink = document.createElement('span');
-    blink.className = 'blink';
-    let i = 0;
-    const type = () => {
-      if (i < text.length) { div.textContent += text[i++]; div.appendChild(blink); setTimeout(type, 42); }
-    };
-    type();
-  } else {
-    div.textContent = '> ' + text;
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-}
-
-function handleSend() {
-  const raw = chatInput.value.trim();
-  if (!raw) return;
-  addMessage(raw, 'user');
-  chatInput.value = '';
-  if (mode === 'idle') enterMode('run');
-  setTimeout(() => addMessage(getDogReply(raw), 'dog'), 380);
-}
-
-chatSend.addEventListener('click', handleSend);
-chatInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleSend(); });
 </script>
 
 </body>
