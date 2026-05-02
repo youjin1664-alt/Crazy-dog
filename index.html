@@ -19,6 +19,12 @@
       background: rgba(180,110,40,0.45);
       border-radius: 50%; pointer-events: none;
       z-index: 9999; transform: translate(-50%,-50%);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    #cursor-dot.hand-active {
+      background: rgba(80, 200, 255, 0.85);
+      box-shadow: 0 0 10px 4px rgba(80, 200, 255, 0.5);
+      transform: translate(-50%, -50%) scale(1.4);
     }
 
     /* ── DOG ── */
@@ -103,51 +109,18 @@
     }
     #cam-toggle:hover { background: rgba(160,90,30,0.22); }
 
-    /* ── PIXEL DIALOG ── */
-    #dialog-box {
-      position: fixed; bottom: 24px; left: 50%;
-      transform: translateX(-50%);
-      width: min(540px, calc(100vw - 120px));
-      z-index: 300;
-      font-family: 'Press Start 2P', monospace;
+    #cursor-dot2 {
+      position: fixed; width: 9px; height: 9px;
+      background: rgba(180,40,40,0.35);
+      border-radius: 50%; pointer-events: none;
+      z-index: 9999; transform: translate(-50%,-50%);
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
     }
-    .pixel-panel {
-      background: #fff; border: 4px solid #4a90d9; border-radius: 16px;
-      box-shadow: 0 0 0 2px #fff, 0 0 0 5px #4a90d9, 4px 6px 0 4px rgba(0,0,0,0.10);
-      padding: 14px 16px 12px;
+    #cursor-dot2.hand2-active {
+      background: rgba(255, 80, 80, 0.85);
+      box-shadow: 0 0 10px 4px rgba(255, 80, 80, 0.5);
+      transform: translate(-50%, -50%) scale(1.4);
     }
-    #chat-messages {
-      min-height: 44px; max-height: 80px; overflow-y: auto;
-      margin-bottom: 10px; display: flex; flex-direction: column;
-      gap: 6px; scrollbar-width: none;
-    }
-    #chat-messages::-webkit-scrollbar { display: none; }
-    .msg { font-size: 8px; line-height: 1.8; color: #222; animation: msgIn .15s ease; }
-    .msg.dog  { color: #b06020; }
-    .msg.user { color: #2563eb; }
-    @keyframes msgIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
-    #chat-row { display: flex; align-items: center; gap: 8px; }
-    #chat-input {
-      flex: 1; font-family: 'Press Start 2P', monospace; font-size: 8px;
-      padding: 8px 10px; border: 3px solid #4a90d9; border-radius: 8px;
-      outline: none; background: #f0f8ff; color: #222; caret-color: #b06020;
-    }
-    #chat-input::placeholder { color: #aac4e8; }
-    #chat-input:focus { border-color: #b06020; background: #fff; }
-    #chat-send {
-      font-family: 'Press Start 2P', monospace; font-size: 7px;
-      padding: 8px 10px; background: #4a90d9; color: #fff;
-      border: none; border-radius: 8px; cursor: pointer;
-      box-shadow: 0 3px 0 #2563aa; transition: background .15s; white-space: nowrap;
-    }
-    #chat-send:hover  { background: #3b82f6; }
-    #chat-send:active { transform: translateY(2px); box-shadow: none; }
-    .blink {
-      display: inline-block; width: 8px; height: 10px;
-      background: #b06020; margin-left: 2px; vertical-align: middle;
-      animation: blink 1s step-end infinite;
-    }
-    @keyframes blink { 50% { opacity: 0; } }
 
     #hold-hint {
       position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
@@ -432,21 +405,11 @@
 </div>
 <button id="cam-toggle" title="Toggle camera">◎</button>
 
-<div id="dialog-box">
-  <div class="pixel-panel">
-    <div id="chat-messages">
-      <div class="msg dog">Woof! What animal do you want me to be?<span class="blink"></span></div>
-    </div>
-    <div id="chat-row">
-      <input id="chat-input" type="text" maxlength="30" placeholder="type an animal..." autocomplete="off" spellcheck="false"/>
-      <button id="chat-send">OK ▶</button>
-    </div>
-  </div>
-</div>
+<div id="cursor-dot2"></div>
 
 
 <script type="module">
-import { FaceLandmarker, FilesetResolver }
+import { FaceLandmarker, FilesetResolver, HandLandmarker }
   from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/vision_bundle.mjs";
 
 /* ════════════════════════════════════════════════════════════════════
@@ -476,7 +439,6 @@ function applyTheme(name) {
 let dogX = innerWidth/2, dogY = innerHeight/2;
 let mx   = innerWidth/2, my   = innerHeight/2;
 let mode = 'idle', modeT = 0, breathT = 0;
-let pressed = false, pressX = 0, pressY = 0, pressT = 0, strokeDist = 0;
 let runTX = 0, runTY = 0;
 let prevAngle = null, angleHist = [], spinAngle = 0, facingLeft = false;
 let stretchX = 1.0;
@@ -484,11 +446,18 @@ const STRETCH_MAX = 3.8, STRETCH_RATE = 2.2;
 let shakeOffsetX = 0;
 let poopDropped   = false;  // for poop_squat
 let sneezeCount   = 0;      // sneeze bursts fired
+let handDetected  = false;
+let handLandmarker = null;
+let hand2X = innerWidth*0.75, hand2Y = innerHeight/2, hand2Detected = false;
+let cloneMode = false, cloneT = 0;
+let clones = [], cloneDivs = [];
+const CLONE_DURATION = 5;
 
 /* DOM */
 const dogWrap   = document.getElementById('dog-wrap');
 const dogSvg    = document.getElementById('dog-svg');
-const cursorDot = document.getElementById('cursor-dot');
+const cursorDot  = document.getElementById('cursor-dot');
+const cursorDot2 = document.getElementById('cursor-dot2');
 
 /* ════════════════════════════════════════════════════════════════════
    HELPERS
@@ -521,36 +490,15 @@ function applyTransform({bounceY=0,rotation=0,scaleY=1,overrideX=null}={}){
 /* ════════════════════════════════════════════════════════════════════
    INPUT
    ════════════════════════════════════════════════════════════════════ */
-document.addEventListener('mousemove',e=>{
-  mx=e.clientX; my=e.clientY;
-  cursorDot.style.left=mx+'px'; cursorDot.style.top=my+'px';
-  if(pressed&&mode!=='run'){
-    strokeDist=dv(mx,my,pressX,pressY);
-    if(strokeDist>18&&isOnDog(mx,my)) enterMode('belly');
-  }
+
+/* Keyboard state */
+const keys={};
+document.addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d'].includes(e.key)) e.preventDefault();
+  if(e.key==='n'&&!cloneMode) startClones();
 });
-document.addEventListener('mousedown',e=>{ pressed=true; pressX=e.clientX; pressY=e.clientY; pressT=performance.now(); strokeDist=0; });
-document.addEventListener('mouseup',e=>{
-  if(!pressed)return;
-  const moved=dv(e.clientX,e.clientY,pressX,pressY), dur=performance.now()-pressT;
-  if(moved<14&&dur<320&&isOnDog(e.clientX,e.clientY)&&mode==='idle') enterMode('run');
-  pressed=false;
-  if(mode==='belly') setTimeout(()=>{ if(mode==='belly')enterMode('idle'); },1800);
-});
-document.addEventListener('touchstart',e=>{
-  const t=e.touches[0]; pressX=t.clientX; pressY=t.clientY; pressT=performance.now(); strokeDist=0; pressed=true;
-},{passive:true});
-document.addEventListener('touchmove',e=>{
-  const t=e.touches[0]; mx=t.clientX; my=t.clientY;
-  if(pressed&&mode!=='run'){ strokeDist=dv(mx,my,pressX,pressY); if(strokeDist>18&&isOnDog(mx,my))enterMode('belly'); }
-},{passive:true});
-document.addEventListener('touchend',e=>{
-  const ch=e.changedTouches[0];
-  const moved=dv(ch.clientX,ch.clientY,pressX,pressY), dur=performance.now()-pressT;
-  if(moved<14&&dur<320&&isOnDog(ch.clientX,ch.clientY)&&mode==='idle')enterMode('run');
-  pressed=false;
-  if(mode==='belly')setTimeout(()=>{ if(mode==='belly')enterMode('idle'); },1800);
-},{passive:true});
+document.addEventListener('keyup',e=>{ keys[e.key]=false; });
 
 /* Circle detector */
 function detectCircle(){
@@ -574,15 +522,8 @@ function frame(ts){
   const dt=Math.min((ts-prevTS)/1000,0.05);
   prevTS=ts; modeT+=dt; breathT+=dt;
 
-  // Stretch
-  const canStretch=pressed&&!['belly','spin','happy_react','dislike_react','poop_squat','sneeze','stunned'].includes(mode);
-  if(canStretch){
-    const h=(performance.now()-pressT)/1000;
-    if(h>0.18) stretchX=Math.min(1+(h-0.18)*STRETCH_RATE,STRETCH_MAX);
-  } else {
-    stretchX+=(1.0-stretchX)*0.10;
-    if(Math.abs(stretchX-1.0)<0.005)stretchX=1.0;
-  }
+  stretchX+=(1.0-stretchX)*0.10;
+  if(Math.abs(stretchX-1.0)<0.005)stretchX=1.0;
 
   if(mode==='idle')          tickIdle(dt);
   if(mode==='run')           tickRun(dt);
@@ -595,6 +536,7 @@ function frame(ts){
   if(mode==='sneeze')        tickSneeze(dt);
   if(mode==='stunned')       tickStunned(dt);
   tickMonkey(dt);
+  tickClones(dt);
 
   dogWrap.style.left=(dogX+shakeOffsetX)+'px';
   dogWrap.style.top=dogY+'px';
@@ -602,10 +544,13 @@ function frame(ts){
 }
 
 function tickIdle(dt){
-  const dx=mx-dogX, dy=my-dogY;
-  if(Math.hypot(dx,dy)>72){ dogX+=dx*0.065; dogY+=dy*0.065; }
-  if(detectCircle()){ enterMode('spin'); return; }
-  facingLeft=mx<dogX;
+  const spd=500*dt;
+  if(keys['w']) dogY-=spd;
+  if(keys['s']) dogY+=spd;
+  if(keys['a']){ dogX-=spd; facingLeft=true; }
+  if(keys['d']){ dogX+=spd; facingLeft=false; }
+  dogX=Math.max(60,Math.min(innerWidth-60,dogX));
+  dogY=Math.max(60,Math.min(innerHeight-60,dogY));
   const b=1+Math.sin(breathT*1.55)*0.018;
   applyTransform({scaleY:b});
 }
@@ -1017,6 +962,7 @@ function tickMonkey(dt){
       monkeyX=mkHomeX(); monkeyY=mkHomeY()+Math.sin(mkT*1.6)*3;
       mkFacing=-1;
       monkeySvg.style.transform=`scaleX(-1)`;
+      if(keys['ArrowUp']||keys['ArrowDown']||keys['ArrowLeft']||keys['ArrowRight']) enterMonkeyMode('chasing');
       break;
     }
     case 'spinning':{
@@ -1026,10 +972,25 @@ function tickMonkey(dt){
       break;
     }
     case 'chasing':{
-      const dx=dogX-monkeyX, dy=dogY-monkeyY, dist=Math.hypot(dx,dy);
-      mkFacing=dx>=0?1:-1;
-      if(dist>58){ monkeyX+=dx*0.14; monkeyY+=dy*0.14; }
-      else { enterMonkeyMode('hitting'); break; }
+      if(cloneMode){
+        const dx=dogX-monkeyX, dy=dogY-monkeyY, dist=Math.hypot(dx,dy);
+        mkFacing=dx>=0?1:-1;
+        if(dist>58){ monkeyX+=(dx/dist)*250*dt; monkeyY+=(dy/dist)*250*dt; }
+        else { enterMonkeyMode('hitting'); break; }
+        const bY=-(Math.abs(Math.sin(mkT*11))*14);
+        monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
+        break;
+      }
+      const spd=250*dt;
+      if(keys['ArrowUp']) monkeyY-=spd;
+      if(keys['ArrowDown']) monkeyY+=spd;
+      if(keys['ArrowLeft']){ monkeyX-=spd; mkFacing=-1; }
+      if(keys['ArrowRight']){ monkeyX+=spd; mkFacing=1; }
+      monkeyX=Math.max(0,Math.min(innerWidth,monkeyX));
+      monkeyY=Math.max(0,Math.min(innerHeight,monkeyY));
+      if(!keys['ArrowLeft']&&!keys['ArrowRight']) mkFacing=(dogX-monkeyX)>=0?1:-1;
+      const ddx=dogX-monkeyX, ddy=dogY-monkeyY;
+      if(Math.hypot(ddx,ddy)<58){ enterMonkeyMode('hitting'); break; }
       const bY=-(Math.abs(Math.sin(mkT*11))*14);
       monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
       break;
@@ -1040,7 +1001,7 @@ function tickMonkey(dt){
       const bY=-Math.sin(prog*Math.PI)*12;
       monkeySvg.style.transform=`scaleX(${mkFacing}) rotate(${lunge}deg) translateY(${bY}px)`;
       if(!mkHitDone&&mkT>0.22){ mkHitDone=true; hitDog(); }
-      if(mkT>0.78) enterMonkeyMode('returning');
+      if(mkT>0.78) enterMonkeyMode(cloneMode?'chasing':'returning');
       break;
     }
     case 'returning':{
@@ -1055,6 +1016,59 @@ function tickMonkey(dt){
   }
   monkeyWrap.style.left=monkeyX+'px';
   monkeyWrap.style.top=monkeyY+'px';
+}
+
+function startClones(){
+  cloneMode=true; cloneT=0;
+  const spread=160;
+  const offsets=[{dx:-spread,dy:-spread},{dx:spread,dy:-spread},{dx:0,dy:spread}];
+  clones=offsets.map(({dx,dy})=>({
+    x:monkeyX+dx, y:monkeyY+dy,
+    facing:-1, hitting:false, hitT:0, hitDone:false
+  }));
+  cloneDivs=clones.map(()=>{
+    const el=monkeyWrap.cloneNode(true);
+    el.removeAttribute('id');
+    el.style.pointerEvents='none';
+    el.style.opacity='0.85';
+    document.body.appendChild(el);
+    return el;
+  });
+  burstAt(monkeyX,monkeyY,'#FF4400',14,6);
+  if(monkeyMode!=='chasing') enterMonkeyMode('chasing');
+}
+
+function tickClones(dt){
+  if(!cloneMode) return;
+  cloneT+=dt;
+  for(let i=0;i<clones.length;i++){
+    const c=clones[i], el=cloneDivs[i];
+    const svg=el.querySelector('svg');
+    if(c.hitting){
+      c.hitT+=dt;
+      const prog=Math.min(c.hitT/0.55,1);
+      const lunge=Math.sin(prog*Math.PI)*(c.facing>0?32:-32);
+      const bY=-Math.sin(prog*Math.PI)*12;
+      if(svg) svg.style.transform=`scaleX(${c.facing}) rotate(${lunge}deg) translateY(${bY}px)`;
+      if(!c.hitDone&&c.hitT>0.22){ c.hitDone=true; hitDog(); }
+      if(c.hitT>0.78){ c.hitting=false; c.hitT=0; c.hitDone=false; }
+    } else {
+      const dx=dogX-c.x, dy=dogY-c.y, dist=Math.hypot(dx,dy);
+      c.facing=dx>=0?1:-1;
+      if(dist>58){ c.x+=(dx/dist)*250*dt; c.y+=(dy/dist)*250*dt; }
+      else { c.hitting=true; c.hitT=0; c.hitDone=false; }
+      const bY=-(Math.abs(Math.sin((cloneT+i*1.2)*11))*14);
+      if(svg) svg.style.transform=`scaleX(${c.facing}) translateY(${bY}px)`;
+    }
+    el.style.left=c.x+'px';
+    el.style.top=c.y+'px';
+  }
+  if(cloneT>=CLONE_DURATION){
+    cloneDivs.forEach(el=>el.remove());
+    cloneDivs=[]; clones=[];
+    cloneMode=false;
+    enterMonkeyMode('returning');
+  }
 }
 
 monkeyWrap.addEventListener('click',e=>{
@@ -1091,6 +1105,13 @@ async function initFace(){
       },
       outputFaceBlendshapes:true, runningMode:"VIDEO", numFaces:1
     });
+    handLandmarker=await HandLandmarker.createFromOptions(fsr,{
+      baseOptions:{
+        modelAssetPath:"https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+        delegate:"GPU"
+      },
+      runningMode:"VIDEO", numHands:2
+    });
   }catch(e){ console.warn("[face]",e); camWrap.style.display='none'; return; }
 
   const video=document.getElementById('webcam');
@@ -1109,6 +1130,30 @@ async function initFace(){
         const emo=classify(res.faceBlendshapes[0].categories);
         const reacting=['happy_react','dislike_react','poop_run','poop_squat','sneeze','stunned'].includes(mode);
         if(emo!==currentEmotion&&!reacting){ applyTheme(emo); if(mode==='run')setGlow(true); }
+      }
+      if(handLandmarker){
+        const hRes=handLandmarker.detectForVideo(video,performance.now());
+        const raw=(hRes.landmarks??[]).map(lms=>({
+          x:(1-lms[8].x)*innerWidth, y:lms[8].y*innerHeight
+        })).sort((a,b)=>a.x-b.x); // leftmost = player1
+        if(raw.length>=1){
+          handDetected=true;
+          mx=raw[0].x; my=raw[0].y;
+          cursorDot.style.left=mx+'px'; cursorDot.style.top=my+'px';
+          cursorDot.classList.add('hand-active');
+        }else{
+          handDetected=false;
+          cursorDot.classList.remove('hand-active');
+        }
+        if(raw.length>=2){
+          hand2Detected=true;
+          hand2X=raw[1].x; hand2Y=raw[1].y;
+          cursorDot2.style.left=hand2X+'px'; cursorDot2.style.top=hand2Y+'px';
+          cursorDot2.classList.add('hand2-active');
+        }else{
+          hand2Detected=false;
+          cursorDot2.classList.remove('hand2-active');
+        }
       }
     }
     requestAnimationFrame(detect);
@@ -1131,45 +1176,6 @@ initFace();
 /* ════════════════════════════════════════════════════════════════════
    PIXEL CHAT BOX
    ════════════════════════════════════════════════════════════════════ */
-const chatInput=document.getElementById('chat-input');
-const chatSend=document.getElementById('chat-send');
-const chatMessages=document.getElementById('chat-messages');
-chatInput.addEventListener('mousedown',e=>e.stopPropagation());
-chatInput.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
-
-const DOG_REPLIES={
-  dog:    ["Woof! Already a hotdog dog!","Arf! Still a dog!"],
-  cat:    ["Mrow? Still smells like mustard."],
-  fox:    ["What does the fox say? Still woof."],
-  rabbit: ["Hippity hop! Sausage bunny!"],
-  hotdog: ["That's me!! WOOF!","I AM the hotdog!!"],
-  default:["Woof! I tried to be that!","Interesting! *wags tail*","My mustard is wagging!","Woof woof! Transform!"],
-};
-function getDogReply(a){
-  const k=a.toLowerCase().trim();
-  for(const[key,r]of Object.entries(DOG_REPLIES)) if(k.includes(key)) return r[Math.floor(Math.random()*r.length)];
-  const f=DOG_REPLIES.default; return f[Math.floor(Math.random()*f.length)];
-}
-function addMessage(text,who){
-  chatMessages.querySelectorAll('.blink').forEach(e=>e.remove());
-  const div=document.createElement('div'); div.className=`msg ${who}`;
-  if(who==='dog'){
-    chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
-    const blink=document.createElement('span'); blink.className='blink';
-    let i=0; const type=()=>{ if(i<text.length){div.textContent+=text[i++];div.appendChild(blink);setTimeout(type,42);} };
-    type();
-  } else {
-    div.textContent='> '+text; chatMessages.appendChild(div); chatMessages.scrollTop=chatMessages.scrollHeight;
-  }
-}
-function handleSend(){
-  const raw=chatInput.value.trim(); if(!raw)return;
-  addMessage(raw,'user'); chatInput.value='';
-  if(mode==='idle')enterMode('run');
-  setTimeout(()=>addMessage(getDogReply(raw),'dog'),380);
-}
-chatSend.addEventListener('click',handleSend);
-chatInput.addEventListener('keydown',e=>{ if(e.key==='Enter')handleSend(); });
 </script>
 
 </body>
