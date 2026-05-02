@@ -380,6 +380,186 @@
       50% { margin-top: -10px; }
     }
 
+    /* ── 90s PIXEL GAME SKIN ── */
+    body {
+      background:
+        linear-gradient(180deg, #0788f8 0 36%, #20b9ff 36% 58%, #66d84c 58% 100%);
+      image-rendering: pixelated;
+    }
+    body::after {
+      content: "";
+      position: fixed; inset: 0;
+      z-index: 490; pointer-events: none;
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 2px, rgba(0,0,0,0.03) 2px 4px),
+        linear-gradient(90deg, rgba(255,255,255,0.05), rgba(0,0,0,0.04));
+      mix-blend-mode: soft-light;
+      opacity: 0.5;
+    }
+    #scene-bg {
+      perspective: none;
+      background:
+        url('bg.png') center/cover no-repeat;
+      image-rendering: pixelated;
+    }
+    #scene-bg::before {
+      display: none; width: 72px; height: 36px; inset: 72px auto auto 74px;
+      background: #fff;
+      filter: none;
+      box-shadow:
+        36px 0 #fff, 72px 0 #e9f6ff, 108px 0 #d2e9ff,
+        0 36px #d9efff, 36px 36px #fff, 72px 36px #fff,
+        460px 22px #fff, 496px 22px #fff, 532px 22px #d9efff, 568px 22px #fff,
+        424px 58px #d2e9ff, 460px 58px #fff, 496px 58px #fff,
+        210px 128px #fff, 246px 128px #d9efff, 282px 128px #fff;
+    }
+    .hill {
+      border-radius: 0;
+      transform: none;
+      box-shadow: none;
+    }
+    .hill.back {
+      left: 30vw; bottom: 22vh; width: 42vw; height: 28vh;
+      opacity: 1; filter: none;
+      background:
+        linear-gradient(135deg, transparent 0 28%, #bdf7ff 28% 46%, transparent 46%),
+        linear-gradient(225deg, transparent 0 24%, #7edfff 24% 46%, transparent 46%),
+        linear-gradient(180deg, #a8f1ff 0 55%, #47bdd8 55% 100%);
+      clip-path: polygon(0 100%, 0 58%, 12% 58%, 12% 44%, 24% 44%, 24% 31%, 36% 31%, 36% 18%, 49% 18%, 49% 9%, 62% 9%, 62% 20%, 74% 20%, 74% 33%, 86% 33%, 86% 51%, 100% 51%, 100% 100%);
+    }
+    .hill.front {
+      right: -5vw; bottom: 0; width: 36vw; height: 38vh;
+      transform: none;
+      border-radius: 0;
+      background:
+        linear-gradient(135deg, #b88b63 0 32%, #8a6249 32% 66%, #5b4439 66% 100%);
+      clip-path: polygon(22% 100%, 22% 84%, 30% 84%, 30% 68%, 39% 68%, 39% 52%, 47% 52%, 47% 38%, 56% 38%, 56% 26%, 66% 26%, 66% 16%, 76% 16%, 76% 8%, 100% 8%, 100% 100%);
+      box-shadow: -10px 0 0 #6b4c3b;
+    }
+    .grass {
+      left: 0; right: 0; bottom: 0; height: 31vh;
+      clip-path: none;
+      background:
+        repeating-linear-gradient(90deg, #36b01d 0 20px, #74f53f 20px 34px, #138719 34px 48px, #9cff4f 48px 64px),
+        linear-gradient(180deg, #73f53c 0 18%, #24a020 18% 100%);
+      box-shadow: inset 0 12px 0 #9cff4f, inset 0 -22px 0 #0d6319;
+    }
+    .grass::before {
+      inset: -78px 0 auto 0; height: 86px;
+      opacity: 1;
+      transform: none;
+      background:
+        repeating-linear-gradient(90deg,
+          transparent 0 10px, #78f53c 10px 22px, transparent 22px 34px,
+          #26a91f 34px 46px, transparent 46px 60px, #a4ff54 60px 74px);
+    }
+    .stone {
+      border-radius: 0;
+      background: #b69773;
+      box-shadow: inset -12px -12px 0 #5e4638, inset 10px 10px 0 #ead2a8;
+      clip-path: polygon(0 100%, 0 35%, 18% 35%, 18% 18%, 36% 18%, 36% 0, 66% 0, 66% 18%, 84% 18%, 84% 36%, 100% 36%, 100% 100%);
+    }
+    .question-block,
+    #power-block {
+      border-radius: 0;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      background: #ffd414;
+      text-shadow: 4px 4px 0 #b97a00;
+      box-shadow:
+        inset 8px 8px 0 #fff06b,
+        inset -8px -8px 0 #b77d00,
+        8px 8px 0 rgba(0,0,0,0.28);
+    }
+    .question-block::before,
+    .question-block::after,
+    #power-block::before,
+    #power-block::after {
+      border-radius: 0;
+      border: 0;
+      background: #b77d00;
+      box-shadow: 52px 0 #b77d00, 0 52px #b77d00, 52px 52px #b77d00;
+    }
+    #power-block::before { display: none; }
+    #power-block::after {
+      width: 7px; height: 7px; left: 8px; top: 8px;
+      box-shadow: 53px 0 #b77d00, 0 53px #b77d00, 53px 53px #b77d00;
+    }
+    .question-block.big {
+      left: -22px; top: 24vh;
+      width: 92px;
+      transform: none;
+      opacity: 1;
+    }
+    .question-block.mid {
+      right: -18px; top: 44vh;
+      width: 96px;
+      transform: none;
+      opacity: 1;
+    }
+    .question-block.ground { display: none; }
+    .brick-stack {
+      width: 128px; height: 80px;
+      background:
+        linear-gradient(90deg, transparent 0 30px, #2b1a15 30px 36px, transparent 36px 64px, #2b1a15 64px 70px, transparent 70px),
+        repeating-linear-gradient(180deg, #8d4a2e 0 18px, #3a2118 18px 24px);
+      box-shadow: inset 8px 8px 0 #d0783d, inset -8px -8px 0 #3a2118, 8px 8px 0 rgba(0,0,0,0.22);
+      transform: none;
+    }
+    .palm {
+      width: 12px; height: 128px;
+      border-radius: 0;
+      background: repeating-linear-gradient(180deg, #6b422a 0 14px, #4a2d22 14px 22px);
+      box-shadow: 6px 0 0 #2a1a13;
+      transform: rotate(-5deg);
+    }
+    .palm::before {
+      width: 128px; height: 88px;
+      background:
+        linear-gradient(90deg, transparent 0 14%, #079447 14% 30%, transparent 30% 100%),
+        linear-gradient(135deg, transparent 0 28%, #11bd54 28% 43%, transparent 43%),
+        linear-gradient(45deg, transparent 0 40%, #086b40 40% 55%, transparent 55%);
+      filter: none;
+    }
+    #score-board,
+    #item-toast,
+    #cam-wrap {
+      border-radius: 0;
+      border: 4px solid #4a2d1d;
+      background: #c28851;
+      box-shadow: 6px 6px 0 #28160d;
+      color: #fff;
+      backdrop-filter: none;
+    }
+    #match-timer {
+      border-radius: 0;
+      border: 3px solid #4a2d1d;
+      background: #e2ab73;
+      box-shadow: none;
+    }
+    #timer-fill {
+      border-radius: 0;
+      background: #e01818;
+      box-shadow: inset 0 4px 0 #ff7060, inset 0 -4px 0 #8e0808;
+    }
+    .score-vs,
+    #cam-toggle {
+      border-radius: 0;
+      background: #ffd414;
+      box-shadow: inset 4px 4px 0 #fff06b, inset -4px -4px 0 #b77d00;
+    }
+    #dog-svg,
+    #monkey-svg {
+      image-rendering: pixelated;
+      shape-rendering: crispEdges;
+      filter: drop-shadow(6px 6px 0 rgba(20,30,60,0.22)) saturate(1.25) contrast(1.08);
+    }
+    #shield-bubble {
+      border-radius: 0;
+      border: 4px solid #4ce7ff;
+      box-shadow: 0 0 0 4px rgba(40,140,255,0.35);
+    }
+
     /* ── MONKEY ── */
     #monkey-wrap {
       position: fixed; z-index: 205;
@@ -400,7 +580,220 @@
       text-align: center; letter-spacing: 0.04em;
       pointer-events: none; white-space: nowrap;
     }
-  </style>
+
+    /* ── PREMIUM 3D CLAY ADVENTURE SKIN ── 
+    body {
+      background:
+        radial-gradient(circle at 18% 8%, rgba(255,255,255,0.92) 0 7%, rgba(255,255,255,0) 18%),
+        linear-gradient(180deg, #55c9ff 0%, #bdefff 45%, #dbffd0 64%, #65cf37 100%);
+      image-rendering: auto;
+    }
+    body::after { display: none; }
+    #scene-bg {
+      perspective: 1100px;
+      background:
+        radial-gradient(ellipse at 18% 12%, rgba(255,255,255,0.74) 0 9%, rgba(255,255,255,0) 22%),
+        radial-gradient(ellipse at 72% 15%, rgba(255,255,255,0.62) 0 8%, rgba(255,255,255,0) 20%),
+        linear-gradient(180deg, #4dc3fa 0%, #bbf2ff 47%, #f3ffe6 70%, #4ab72e 100%);
+    }
+    #scene-bg::before {
+      width: 150px; height: 42px; inset: 58px auto auto 10vw;
+      border-radius: 999px;
+      background: radial-gradient(ellipse at 50% 48%, #fff 0 52%, #d9f4ff 74%, rgba(255,255,255,0) 76%);
+      filter: blur(0.3px);
+      box-shadow:
+        26vw 22px 0 -10px rgba(255,255,255,0.94),
+        48vw -16px 0 10px rgba(255,255,255,0.88),
+        72vw 46px 0 -14px rgba(255,255,255,0.82),
+        14vw 124px 0 -22px rgba(255,255,255,0.64),
+        56vw 148px 0 -26px rgba(255,255,255,0.58);
+    }
+    .hill {
+      border-radius: 48% 52% 12% 10% / 74% 74% 14% 14%;
+      clip-path: none;
+      transform: rotate(-5deg);
+      box-shadow: inset 24px 26px 40px rgba(255,255,255,0.38), inset -34px -28px 42px rgba(39,122,72,0.2), 0 18px 36px rgba(52,121,94,0.16);
+    }
+    .hill.back {
+      left: 30vw; bottom: 21vh; width: 50vw; height: 32vh;
+      opacity: 0.92; filter: blur(0.2px);
+      background:
+        radial-gradient(circle at 30% 22%, rgba(255,255,255,0.32) 0 8%, rgba(255,255,255,0) 10%),
+        radial-gradient(circle at 62% 18%, rgba(255,255,255,0.24) 0 7%, rgba(255,255,255,0) 9%),
+        linear-gradient(145deg, #d9ffc5 0%, #91e46b 38%, #4fbf60 100%);
+    }
+    .hill.front {
+      right: -8vw; bottom: -2vh; width: 44vw; height: 45vh;
+      transform: rotate(-7deg);
+      border-radius: 75% 0 0 18% / 84% 0 0 20%;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,0.24), rgba(255,255,255,0) 26%),
+        repeating-linear-gradient(92deg, rgba(111,71,43,0.16) 0 13px, rgba(72,46,31,0.08) 13px 25px),
+        linear-gradient(145deg, #cdb08d 0%, #9b7456 54%, #5c4a3d 100%);
+      box-shadow: inset -44px -26px 52px rgba(25,18,15,0.28), inset 26px 26px 34px rgba(255,255,255,0.24), -12px 16px 34px rgba(64,84,50,0.14);
+    }
+    .grass {
+      left: -4vw; right: -4vw; bottom: -8vh; height: 39vh;
+      clip-path: polygon(0 25%, 8% 20%, 20% 25%, 33% 16%, 48% 21%, 62% 11%, 77% 20%, 90% 12%, 100% 18%, 100% 100%, 0 100%);
+      background:
+        radial-gradient(ellipse at 30% 4%, rgba(255,255,255,0.48) 0 8%, rgba(255,255,255,0) 24%),
+        repeating-linear-gradient(101deg, rgba(245,255,210,0.62) 0 3px, rgba(90,220,42,0) 3px 14px),
+        linear-gradient(180deg, #b8ff69 0%, #55d536 35%, #148338 100%);
+      box-shadow: inset 0 24px 34px rgba(255,255,255,0.3), inset 0 -70px 95px rgba(0,48,25,0.42);
+    }
+    .grass::before {
+      inset: -22px 0 0; height: auto;
+      opacity: 0.7;
+      transform: skewY(-2deg);
+      background: repeating-linear-gradient(103deg, transparent 0 7px, rgba(245,255,210,0.55) 8px 10px, transparent 11px 17px);
+    }
+    .stone {
+      border-radius: 999px 999px 32px 32px;
+      clip-path: none;
+      background:
+        radial-gradient(circle at 32% 23%, rgba(255,255,255,0.48) 0 11%, rgba(255,255,255,0) 13%),
+        radial-gradient(circle at 62% 41%, rgba(255,255,255,0.28) 0 8%, rgba(255,255,255,0) 10%),
+        linear-gradient(145deg, #d4f9aa 0%, #84d963 46%, #48aa5c 100%);
+      box-shadow: inset 18px 18px 24px rgba(255,255,255,0.28), inset -20px -24px 28px rgba(24,91,54,0.28), 0 16px 28px rgba(35,80,55,0.15);
+    }
+    .stone.one { left: 7vw; bottom: 25vh; width: 11vw; height: 28vh; }
+    .stone.two { left: 16vw; bottom: 24vh; width: 7vw; height: 18vh; background: linear-gradient(145deg, #c8f8ff, #70c9e4 55%, #4e9fc0); }
+    .stone.three { left: 80vw; bottom: 31vh; width: 10vw; height: 24vh; background: linear-gradient(145deg, #f7d4df, #d99db1 55%, #b9788d); }
+    .question-block,
+    #power-block {
+      border-radius: 10px;
+      background: linear-gradient(145deg, #fff56a 0%, #ffdc19 43%, #c98d00 100%);
+      color: rgba(255,255,255,0.96);
+      text-shadow: 0 5px 0 rgba(150,100,0,0.32);
+      box-shadow: inset 12px 14px 16px rgba(255,255,255,0.52), inset -14px -16px 18px rgba(130,82,0,0.28), 0 16px 26px rgba(60,55,20,0.23);
+      transform-style: preserve-3d;
+    }
+    .question-block::before,
+    .question-block::after,
+    #power-block::before,
+    #power-block::after {
+      display: block;
+      border-radius: 50%;
+      background: rgba(166,123,0,0.38);
+      box-shadow: 53px 0 rgba(166,123,0,0.38), 0 53px rgba(166,123,0,0.38), 53px 53px rgba(166,123,0,0.38);
+    }
+    #power-block::before { display: block; border: 2px solid rgba(255,255,255,0.22); background: transparent; box-shadow: none; }
+    #power-block::after { width: 7px; height: 7px; left: 8px; top: 8px; }
+    .question-block.big { left: -2vw; top: 25vh; width: clamp(82px, 12vw, 150px); transform: rotateY(-16deg) rotateZ(6deg); opacity: 0.92; }
+    .question-block.mid { right: 5vw; top: 43vh; width: clamp(76px, 10vw, 128px); transform: rotateZ(-10deg) rotateY(18deg); opacity: 0.86; }
+    .question-block.ground { display: grid; left: 21vw; bottom: 5vh; transform: rotateX(54deg) rotateZ(-7deg); opacity: 0.8; }
+    .brick-stack {
+      width: 132px; height: 78px;
+      background:
+        linear-gradient(90deg, transparent 0 47%, rgba(0,0,0,0.18) 48% 52%, transparent 53%),
+        repeating-linear-gradient(180deg, #a95632 0 19px, #553126 19px 25px);
+      box-shadow: inset 10px 8px 15px rgba(255,210,140,0.22), inset -10px -10px 16px rgba(0,0,0,0.28), 0 16px 22px rgba(0,0,0,0.18);
+      transform: skewY(1deg);
+    }
+    .palm {
+      width: 16px; height: 128px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #5d3828, #8a5f45 45%, #2d201b);
+      box-shadow: inset -5px 0 5px rgba(0,0,0,0.22);
+      transform: rotate(-8deg);
+    }
+    .palm::before {
+      width: 124px; height: 78px;
+      background:
+        radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0) 0 18%, #0b815b 19% 34%, rgba(0,0,0,0) 35%),
+        radial-gradient(ellipse at 20% 84%, rgba(0,0,0,0) 0 20%, #12ae64 21% 34%, rgba(0,0,0,0) 35%),
+        radial-gradient(ellipse at 80% 84%, rgba(0,0,0,0) 0 20%, #087257 21% 34%, rgba(0,0,0,0) 35%);
+      filter: drop-shadow(0 5px 4px rgba(0,70,35,0.18));
+    }
+    #score-board,
+    #item-toast,
+    #cam-wrap {
+      border-radius: 12px;
+      border: 3px solid rgba(70,115,210,0.7);
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 9px 0 rgba(58,91,150,0.18), inset 0 2px 0 rgba(255,255,255,0.8);
+      backdrop-filter: blur(6px);
+    }
+    #match-timer {
+      border-radius: 999px;
+      border: 2px solid rgba(80,40,50,0.34);
+      background: rgba(255,255,255,0.72);
+      box-shadow: inset 0 2px 4px rgba(60,40,30,0.14);
+    }
+    #timer-fill {
+      border-radius: inherit;
+      background: linear-gradient(90deg, #ff3a24 0%, #d90000 65%, #8a0000 100%);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), 0 0 12px rgba(255,0,0,0.32);
+    }
+    .score-vs,
+    #cam-toggle {
+      border-radius: 8px;
+      background: linear-gradient(145deg, #ffe75a, #ffb51e);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.55), inset 0 -4px 0 rgba(177,112,0,0.25);
+    }
+    #dog-svg {
+      width: 250px; height: 154px;
+      image-rendering: auto;
+      shape-rendering: geometricPrecision;
+      filter:
+        drop-shadow(0 18px 18px rgba(72,70,36,0.22))
+        drop-shadow(0 0 18px rgba(255,230,120,0.18))
+        saturate(1.18) contrast(1.04);
+    }
+    #monkey-svg {
+      width: 92px; height: 132px;
+      image-rendering: auto;
+      shape-rendering: geometricPrecision;
+      filter:
+        drop-shadow(0 18px 16px rgba(48,38,26,0.24))
+        drop-shadow(0 0 14px rgba(255,82,28,0.22))
+        saturate(1.16) contrast(1.04);
+    }
+    #dog-wrap::after,
+    #monkey-wrap::after {
+      content: "";
+      position: absolute; left: 50%; bottom: -8px;
+      width: 70%; height: 14px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: rgba(45,60,35,0.18);
+      filter: blur(4px);
+      z-index: -1;
+    }
+    #shield-bubble {
+      border-radius: 50%;
+      border: 3px solid rgba(80,200,255,0.9);
+      box-shadow: 0 0 22px 8px rgba(80,200,255,0.45), inset 0 0 20px rgba(80,200,255,0.18);
+    }
+    */
+
+  
+    #pre-game-lobby {
+      position: fixed; inset: 0; z-index: 99998;
+      background: rgba(74, 45, 29, 0.95); display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between; padding: 60px 0 100px 0;
+      font-family: 'Press Start 2P', monospace; color: #fff;
+    }
+    #pre-game-lobby h1 { font-size: 24px; color: #e2ab73; text-shadow: 2px 2px 0 #28160d; }
+    #btn-capture { 
+      padding: 16px 32px; font-family: inherit; font-size: 20px; 
+      background: #7af04a; border: 4px solid #148338; border-radius: 8px;
+      color: #000; cursor: pointer; box-shadow: 0 6px 0 #0d6319; transition: transform 0.1s;
+      z-index: 100001;
+    }
+    #btn-capture:active { transform: translateY(6px); box-shadow: 0 0 0 #0d6319; }
+    
+    #cam-wrap.lobby-mode {
+      top: 50%; left: 50%; bottom: auto; right: auto;
+      transform: translate(-50%, -50%);
+      width: 480px; height: 360px;
+      z-index: 99999;
+      border: 6px solid #c28851;
+      border-radius: 10px;
+    }
+    #cam-wrap.lobby-mode video { width: 100%; height: 100%; transform: scaleX(-1); object-fit: cover; }
+    #cam-wrap.lobby-mode #emotion-tag { display: none; }
+</style>
 </head>
 <body>
 
@@ -416,152 +809,353 @@
 </div>
 <div id="item-toast"></div>
 <div id="scene-bg" aria-hidden="true">
-  <div class="hill back"></div>
-  <div class="stone one"></div>
-  <div class="stone two"></div>
-  <div class="stone three"></div>
   <div class="question-block big">?</div>
   <div class="question-block mid">?</div>
   <div class="question-block ground">?</div>
-  <div class="palm"></div>
-  <div class="brick-stack"></div>
-  <div class="hill front"></div>
-  <div class="grass"></div>
 </div>
+
+<div id="pre-game-lobby">
+  <h1>TAKE PHOTO FOR AVATAR</h1>
+  <button id="btn-capture">CAPTURE & START</button>
+</div>
+
 <canvas id="particle-canvas"></canvas>
 <div id="power-block" aria-hidden="true">?</div>
 
 <!-- ── HOTDOG DOG ── -->
 <div id="dog-wrap">
-  <svg id="dog-svg" viewBox="0 0 280 170" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="gBun" cx="50%" cy="28%" r="65%">
-        <stop offset="0%"   stop-color="#faefd0"/>
-        <stop offset="50%"  stop-color="#eed8a0"/>
-        <stop offset="100%" stop-color="#c8a055"/>
-      </radialGradient>
-      <radialGradient id="gBunEnd" cx="48%" cy="30%" r="62%">
-        <stop offset="0%"   stop-color="#f5e5b5"/>
-        <stop offset="55%"  stop-color="#ddc07a"/>
-        <stop offset="100%" stop-color="#b88a40"/>
-      </radialGradient>
-      <radialGradient id="gSaus" cx="50%" cy="28%" r="68%">
-        <stop offset="0%"   stop-color="#d06838"/>
-        <stop offset="38%"  stop-color="#963820"/>
-        <stop offset="78%"  stop-color="#621f0c"/>
-        <stop offset="100%" stop-color="#3e1005"/>
-      </radialGradient>
-      <linearGradient id="gMust" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop id="m1" offset="0%"   stop-color="#f5d840"/>
-        <stop id="m2" offset="100%" stop-color="#c8a010"/>
-      </linearGradient>
-      <radialGradient id="gSpec" cx="30%" cy="22%" r="55%">
-        <stop offset="0%"   stop-color="rgba(255,255,255,0.70)"/>
-        <stop offset="60%"  stop-color="rgba(255,255,255,0.15)"/>
-        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-      </radialGradient>
-      <filter id="fBloom" x="-22%" y="-22%" width="144%" height="144%">
-        <feGaussianBlur stdDeviation="5" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <ellipse cx="140" cy="163" rx="95" ry="8" fill="rgba(100,50,10,0.13)"/>
-    <rect x="12" y="62" width="256" height="86" rx="43" fill="url(#gBun)"/>
-    <rect x="14" y="104" width="252" height="44" rx="35" fill="#d4aa65"/>
-    <rect x="9"  y="72"  width="262" height="68" rx="30" fill="url(#gSaus)"/>
-    <ellipse cx="130" cy="78" rx="72" ry="10" fill="url(#gSpec)"/>
-    <rect x="9"  y="72"  width="262" height="68" rx="30" fill="url(#gSaus)" opacity="0.22" filter="url(#fBloom)"/>
-    <ellipse cx="34"  cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
-    <ellipse cx="26"  cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
-    <ellipse cx="246" cy="99" rx="34" ry="46" fill="url(#gBunEnd)"/>
-    <ellipse cx="238" cy="83" rx="14" ry="18" fill="url(#gSpec)"/>
-    <rect x="68"  y="130" width="22" height="36" rx="11" fill="#4e1a08" opacity="0.80"/>
-    <rect x="170" y="130" width="22" height="36" rx="11" fill="#4e1a08" opacity="0.80"/>
-    <rect x="92"  y="133" width="22" height="33" rx="11" fill="#5c2010"/>
-    <rect x="146" y="133" width="22" height="33" rx="11" fill="#5c2010"/>
-    <ellipse cx="22" cy="96" rx="14" ry="20" fill="#4e1a08" transform="rotate(-12,22,96)"/>
-    <ellipse cx="22" cy="96" rx="14" ry="20" fill="#4e1a08" transform="rotate(-12,22,96)" opacity="0.3" filter="url(#fBloom)"/>
-    <ellipse cx="52" cy="107" rx="22" ry="18" fill="rgba(200,100,55,0.40)"/>
-    <circle cx="42" cy="95"  r="7"   fill="#1a0804"/>
-    <circle cx="62" cy="93"  r="7"   fill="#1a0804"/>
-    <circle cx="42" cy="95"  r="4"   fill="#0d0402"/>
-    <circle cx="62" cy="93"  r="4"   fill="#0d0402"/>
-    <circle cx="44.5" cy="92.5" r="2.5" fill="rgba(255,255,255,0.75)"/>
-    <circle cx="64.5" cy="90.5" r="2.5" fill="rgba(255,255,255,0.75)"/>
-    <ellipse cx="52" cy="108" rx="7" ry="5.5" fill="#1a0804"/>
-    <ellipse cx="51" cy="106.5" rx="2.2" ry="1.6" fill="rgba(255,255,255,0.35)"/>
-    <path d="M 44 116 Q 52 123 60 116" stroke="#1a0804" stroke-width="2.8" fill="none" stroke-linecap="round"/>
-    <path d="M 72 68 C 82 54,100 78,118 64 C 136 50,154 74,172 60 C 188 47,205 70,218 58"
-          stroke="url(#gMust)" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M 72 68 C 82 54,100 78,118 64 C 136 50,154 74,172 60 C 188 47,205 70,218 58"
-          stroke="url(#gMust)" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"
-          opacity="0.30" filter="url(#fBloom)"/>
+  <svg id="dog-svg" width="220" height="136" viewBox="0 0 32 20" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+    <rect x="24" y="7" width="1" height="1" fill="#874619"/>
+    <rect x="25" y="7" width="1" height="1" fill="#874619"/>
+    <rect x="26" y="7" width="1" height="1" fill="#874619"/>
+    <rect x="27" y="7" width="1" height="1" fill="#874619"/>
+    <rect x="28" y="7" width="1" height="1" fill="#874619"/>
+    <rect x="29" y="7" width="1" height="1" fill="#874619"/>
+    <rect x="24" y="8" width="1" height="1" fill="#874619"/>
+    <rect x="25" y="8" width="1" height="1" fill="#111111"/>
+    <rect x="27" y="8" width="1" height="1" fill="#874619"/>
+    <rect x="29" y="8" width="1" height="1" fill="#874619"/>
+    <rect x="30" y="8" width="1" height="1" fill="#874619"/>
+    <rect x="2" y="9" width="1" height="1" fill="#b44725"/>
+    <rect x="24" y="9" width="1" height="1" fill="#874619"/>
+    <rect x="25" y="9" width="1" height="1" fill="#874619"/>
+    <rect x="26" y="9" width="1" height="1" fill="#874619"/>
+    <rect x="27" y="9" width="1" height="1" fill="#874619"/>
+    <rect x="28" y="9" width="1" height="1" fill="#874619"/>
+    <rect x="29" y="9" width="1" height="1" fill="#874619"/>
+    <rect x="30" y="9" width="1" height="1" fill="#874619"/>
+    <rect x="2" y="10" width="1" height="1" fill="#b44725"/>
+    <rect x="6" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="7" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="8" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="9" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="10" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="11" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="12" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="13" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="14" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="15" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="16" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="17" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="18" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="19" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="20" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="21" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="22" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="23" y="10" width="1" height="1" fill="#e5a545"/>
+    <rect x="24" y="10" width="1" height="1" fill="#874619"/>
+    <rect x="25" y="10" width="1" height="1" fill="#874619"/>
+    <rect x="27" y="10" width="1" height="1" fill="#874619"/>
+    <rect x="29" y="10" width="1" height="1" fill="#874619"/>
+    <rect x="30" y="10" width="1" height="1" fill="#874619"/>
+    <rect x="2" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="3" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="6" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="7" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="8" y="11" width="1" height="1" fill="#f5d840"/>
+    <rect x="9" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="10" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="11" y="11" width="1" height="1" fill="#f5d840"/>
+    <rect x="12" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="13" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="14" y="11" width="1" height="1" fill="#f5d840"/>
+    <rect x="15" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="16" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="17" y="11" width="1" height="1" fill="#f5d840"/>
+    <rect x="18" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="19" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="20" y="11" width="1" height="1" fill="#f5d840"/>
+    <rect x="21" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="22" y="11" width="1" height="1" fill="#b44725"/>
+    <rect x="23" y="11" width="1" height="1" fill="#f5d840"/>
+    <rect x="24" y="11" width="1" height="1" fill="#874619"/>
+    <rect x="25" y="11" width="1" height="1" fill="#874619"/>
+    <rect x="26" y="11" width="1" height="1" fill="#874619"/>
+    <rect x="27" y="11" width="1" height="1" fill="#874619"/>
+    <rect x="28" y="11" width="1" height="1" fill="#874619"/>
+    <rect x="29" y="11" width="1" height="1" fill="#874619"/>
+    <rect x="30" y="11" width="1" height="1" fill="#874619"/>
+    <rect x="2" y="12" width="1" height="1" fill="#b44725"/>
+    <rect x="3" y="12" width="1" height="1" fill="#b44725"/>
+    <rect x="4" y="12" width="1" height="1" fill="#b44725"/>
+    <rect x="5" y="12" width="1" height="1" fill="#b44725"/>
+    <rect x="6" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="7" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="8" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="9" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="10" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="11" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="12" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="13" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="14" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="15" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="16" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="17" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="18" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="19" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="20" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="21" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="22" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="23" y="12" width="1" height="1" fill="#e5a545"/>
+    <rect x="24" y="12" width="1" height="1" fill="#874619"/>
+    <rect x="25" y="12" width="1" height="1" fill="#874619"/>
+    <rect x="26" y="12" width="1" height="1" fill="#874619"/>
+    <rect x="27" y="12" width="1" height="1" fill="#874619"/>
+    <rect x="28" y="12" width="1" height="1" fill="#874619"/>
+    <rect x="29" y="12" width="1" height="1" fill="#874619"/>
+    <rect x="3" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="4" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="5" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="6" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="7" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="8" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="9" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="10" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="11" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="12" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="13" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="14" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="15" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="16" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="17" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="18" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="19" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="20" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="21" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="22" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="23" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="24" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="25" y="13" width="1" height="1" fill="#b44725"/>
+    <rect x="7" y="15" width="1" height="1" fill="#874619"/>
+    <rect x="8" y="15" width="1" height="1" fill="#874619"/>
+    <rect x="9" y="15" width="1" height="1" fill="#874619"/>
+    <rect x="20" y="15" width="1" height="1" fill="#874619"/>
+    <rect x="21" y="15" width="1" height="1" fill="#874619"/>
+    <rect x="22" y="15" width="1" height="1" fill="#874619"/>
+    <rect x="7" y="16" width="1" height="1" fill="#874619"/>
+    <rect x="8" y="16" width="1" height="1" fill="#874619"/>
+    <rect x="9" y="16" width="1" height="1" fill="#874619"/>
+    <rect x="20" y="16" width="1" height="1" fill="#874619"/>
+    <rect x="21" y="16" width="1" height="1" fill="#874619"/>
+    <rect x="22" y="16" width="1" height="1" fill="#874619"/>
+    <rect x="7" y="17" width="1" height="1" fill="#3b0d03"/>
+    <rect x="8" y="17" width="1" height="1" fill="#3b0d03"/>
+    <rect x="9" y="17" width="1" height="1" fill="#3b0d03"/>
+    <rect x="20" y="17" width="1" height="1" fill="#3b0d03"/>
+    <rect x="21" y="17" width="1" height="1" fill="#3b0d03"/>
+    <rect x="22" y="17" width="1" height="1" fill="#3b0d03"/>
   </svg>
 </div>
 
 <!-- ── MONKEY ── -->
 <div id="monkey-wrap">
-  <svg id="monkey-svg" viewBox="0 0 80 115" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <filter id="fMBloom" x="-60%" y="-60%" width="220%" height="220%">
-        <feGaussianBlur stdDeviation="4" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <!-- Shadow -->
-    <ellipse cx="40" cy="112" rx="21" ry="5" fill="rgba(0,0,0,0.13)"/>
-    <!-- Legs -->
-    <ellipse cx="31" cy="97" rx="8.5" ry="13" fill="#8B5A2B" transform="rotate(-10 31 97)"/>
-    <ellipse cx="49" cy="97" rx="8.5" ry="13" fill="#8B5A2B" transform="rotate(10 49 97)"/>
-    <!-- Feet -->
-    <ellipse cx="27" cy="108" rx="12" ry="6.5" fill="#7A4E24" transform="rotate(-8 27 108)"/>
-    <ellipse cx="53" cy="108" rx="12" ry="6.5" fill="#7A4E24" transform="rotate(8 53 108)"/>
-    <!-- Yellow shorts -->
-    <rect x="21" y="76" width="38" height="26" rx="10" fill="#FFD600"/>
-    <ellipse cx="40" cy="76" rx="19" ry="8" fill="#FFE030"/>
-    <ellipse cx="40" cy="102" rx="17" ry="6.5" fill="#ECC000"/>
-    <line x1="40" y1="79" x2="40" y2="100" stroke="#ECC000" stroke-width="1.5"/>
-    <!-- Torso -->
-    <ellipse cx="40" cy="64" rx="16.5" ry="20" fill="#8B5A2B"/>
-    <!-- Left arm -->
-    <ellipse cx="18" cy="66" rx="7" ry="14.5" fill="#8B5A2B" transform="rotate(-18 18 66)"/>
-    <ellipse cx="11" cy="78" rx="10" ry="7" fill="#C49A6C"/>
-    <!-- Right arm -->
-    <ellipse cx="62" cy="66" rx="7" ry="14.5" fill="#8B5A2B" transform="rotate(18 62 66)"/>
-    <ellipse cx="69" cy="78" rx="10" ry="7" fill="#C49A6C"/>
-    <!-- Head brown -->
-    <circle cx="40" cy="34" r="26" fill="#8B5A2B"/>
-    <!-- Ears -->
-    <circle cx="13" cy="34" r="11" fill="#8B5A2B"/>
-    <circle cx="13" cy="34" r="7"  fill="#C49A6C"/>
-    <circle cx="67" cy="34" r="11" fill="#8B5A2B"/>
-    <circle cx="67" cy="34" r="7"  fill="#C49A6C"/>
-    <!-- Face cream -->
-    <ellipse cx="40" cy="40" rx="19" ry="21" fill="#C49A6C"/>
-    <!-- Eyes (large bulging) -->
-    <circle cx="30" cy="31" r="11.5" fill="white"/>
-    <circle cx="50" cy="31" r="11.5" fill="white"/>
-    <circle cx="30" cy="31" r="6.5"  fill="#111"/>
-    <circle cx="50" cy="31" r="6.5"  fill="#111"/>
-    <circle cx="27.5" cy="28" r="2.8" fill="white"/>
-    <circle cx="47.5" cy="28" r="2.8" fill="white"/>
-    <!-- Mouth wide open -->
-    <ellipse cx="40" cy="47" rx="13.5" ry="11" fill="#1a0800"/>
-    <ellipse cx="40" cy="49" rx="11"   ry="9"  fill="#cc1800"/>
-    <rect x="33"  y="47" width="5.5" height="4.5" rx="1.5" fill="rgba(255,255,255,0.92)"/>
-    <rect x="41.5" y="47" width="5.5" height="4.5" rx="1.5" fill="rgba(255,255,255,0.92)"/>
-    <!-- Helmet -->
-    <rect x="15" y="16" width="50" height="16" rx="9" fill="#E8E8E8"/>
-    <ellipse cx="40" cy="16" rx="25" ry="10" fill="#ECECEC"/>
-    <rect x="13" y="28" width="54" height="7"  rx="3.5" fill="#D0D0D0"/>
-    <ellipse cx="27" cy="14" rx="8" ry="3.5" fill="rgba(255,255,255,0.50)"/>
-    <path d="M 16 25 Q 40 29 64 25" stroke="rgba(0,0,0,0.07)" stroke-width="1.5" fill="none"/>
-    <!-- Siren dome -->
-    <ellipse cx="40" cy="9"  rx="9"  ry="7"   fill="#CC0000"/>
-    <ellipse cx="40" cy="5"  rx="6"  ry="5"   fill="#FF3333"/>
-    <ellipse cx="37.5" cy="3.5" rx="2" ry="1.5" fill="rgba(255,210,210,0.80)"/>
-    <!-- Siren glow (JS-animated) -->
-    <circle id="mk-siren-glow" cx="40" cy="6" r="18" fill="rgba(255,40,0,0)" opacity="0" filter="url(#fMBloom)"/>
+  <svg id="monkey-svg" width="72" height="103" viewBox="0 0 16 23" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+    <rect x="6" y="1" width="1" height="1" fill="#e8edf0"/>
+    <rect x="7" y="1" width="1" height="1" fill="#e8edf0"/>
+    <rect x="8" y="1" width="1" height="1" fill="#e8edf0"/>
+    <rect x="9" y="1" width="1" height="1" fill="#e8edf0"/>
+    <rect x="10" y="1" width="1" height="1" fill="#e8edf0"/>
+    <rect x="5" y="2" width="1" height="1" fill="#e8edf0"/>
+    <rect x="6" y="2" width="1" height="1" fill="#CC0000"/>
+    <rect x="7" y="2" width="1" height="1" fill="#CC0000"/>
+    <rect x="8" y="2" width="1" height="1" fill="#CC0000"/>
+    <rect x="9" y="2" width="1" height="1" fill="#CC0000"/>
+    <rect x="10" y="2" width="1" height="1" fill="#CC0000"/>
+    <rect x="11" y="2" width="1" height="1" fill="#e8edf0"/>
+    <rect x="5" y="3" width="1" height="1" fill="#e8edf0"/>
+    <rect x="6" y="3" width="1" height="1" fill="#CC0000"/>
+    <rect x="7" y="3" width="1" height="1" fill="#CC0000"/>
+    <rect x="8" y="3" width="1" height="1" fill="#CC0000"/>
+    <rect x="9" y="3" width="1" height="1" fill="#CC0000"/>
+    <rect x="10" y="3" width="1" height="1" fill="#CC0000"/>
+    <rect x="11" y="3" width="1" height="1" fill="#e8edf0"/>
+    <rect x="5" y="4" width="1" height="1" fill="#e8edf0"/>
+    <rect x="6" y="4" width="1" height="1" fill="#CC0000"/>
+    <rect x="7" y="4" width="1" height="1" fill="#CC0000"/>
+    <rect x="8" y="4" width="1" height="1" fill="#CC0000"/>
+    <rect x="9" y="4" width="1" height="1" fill="#CC0000"/>
+    <rect x="10" y="4" width="1" height="1" fill="#CC0000"/>
+    <rect x="11" y="4" width="1" height="1" fill="#e8edf0"/>
+    <rect x="4" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="5" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="6" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="7" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="8" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="9" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="10" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="11" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="12" y="5" width="1" height="1" fill="#e8edf0"/>
+    <rect x="4" y="6" width="1" height="1" fill="#e8edf0"/>
+    <rect x="5" y="6" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="6" width="1" height="1" fill="#875126"/>
+    <rect x="7" y="6" width="1" height="1" fill="#875126"/>
+    <rect x="8" y="6" width="1" height="1" fill="#875126"/>
+    <rect x="9" y="6" width="1" height="1" fill="#875126"/>
+    <rect x="10" y="6" width="1" height="1" fill="#875126"/>
+    <rect x="11" y="6" width="1" height="1" fill="#875126"/>
+    <rect x="12" y="6" width="1" height="1" fill="#e8edf0"/>
+    <rect x="2" y="7" width="1" height="1" fill="#e8edf0"/>
+    <rect x="3" y="7" width="1" height="1" fill="#e8edf0"/>
+    <rect x="4" y="7" width="1" height="1" fill="#875126"/>
+    <rect x="5" y="7" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="6" y="7" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="7" y="7" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="8" y="7" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="9" y="7" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="10" y="7" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="11" y="7" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="12" y="7" width="1" height="1" fill="#e8edf0"/>
+    <rect x="13" y="7" width="1" height="1" fill="#875126"/>
+    <rect x="14" y="7" width="1" height="1" fill="#e8edf0"/>
+    <rect x="15" y="7" width="1" height="1" fill="#e8edf0"/>
+    <rect x="2" y="8" width="1" height="1" fill="#e8edf0"/>
+    <rect x="3" y="8" width="1" height="1" fill="#e8edf0"/>
+    <rect x="4" y="8" width="1" height="1" fill="#875126"/>
+    <rect x="5" y="8" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="7" y="8" width="1" height="1" fill="#111111"/>
+    <rect x="9" y="8" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="11" y="8" width="1" height="1" fill="#111111"/>
+    <rect x="12" y="8" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="13" y="8" width="1" height="1" fill="#875126"/>
+    <rect x="14" y="8" width="1" height="1" fill="#e8edf0"/>
+    <rect x="15" y="8" width="1" height="1" fill="#e8edf0"/>
+    <rect x="3" y="9" width="1" height="1" fill="#e8edf0"/>
+    <rect x="4" y="9" width="1" height="1" fill="#875126"/>
+    <rect x="5" y="9" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="6" y="9" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="7" y="9" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="8" y="9" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="9" y="9" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="10" y="9" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="11" y="9" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="12" y="9" width="1" height="1" fill="#e8edf0"/>
+    <rect x="13" y="9" width="1" height="1" fill="#875126"/>
+    <rect x="4" y="10" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="10" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="7" y="10" width="1" height="1" fill="#1a0800"/>
+    <rect x="8" y="10" width="1" height="1" fill="#1a0800"/>
+    <rect x="9" y="10" width="1" height="1" fill="#1a0800"/>
+    <rect x="10" y="10" width="1" height="1" fill="#1a0800"/>
+    <rect x="11" y="10" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="13" y="10" width="1" height="1" fill="#875126"/>
+    <rect x="4" y="11" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="11" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="7" y="11" width="1" height="1" fill="#cc1800"/>
+    <rect x="8" y="11" width="1" height="1" fill="#cc1800"/>
+    <rect x="9" y="11" width="1" height="1" fill="#cc1800"/>
+    <rect x="10" y="11" width="1" height="1" fill="#cc1800"/>
+    <rect x="11" y="11" width="1" height="1" fill="#ffe2ad"/>
+    <rect x="13" y="11" width="1" height="1" fill="#875126"/>
+    <rect x="4" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="5" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="7" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="8" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="9" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="10" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="11" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="12" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="13" y="12" width="1" height="1" fill="#875126"/>
+    <rect x="3" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="4" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="5" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="7" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="8" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="9" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="10" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="11" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="12" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="13" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="14" y="13" width="1" height="1" fill="#875126"/>
+    <rect x="2" y="14" width="1" height="1" fill="#e8edf0"/>
+    <rect x="3" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="4" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="5" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="7" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="8" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="9" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="10" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="11" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="12" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="13" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="14" y="14" width="1" height="1" fill="#875126"/>
+    <rect x="15" y="14" width="1" height="1" fill="#e8edf0"/>
+    <rect x="2" y="15" width="1" height="1" fill="#e8edf0"/>
+    <rect x="3" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="4" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="5" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="7" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="8" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="9" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="10" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="11" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="12" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="13" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="14" y="15" width="1" height="1" fill="#875126"/>
+    <rect x="15" y="15" width="1" height="1" fill="#e8edf0"/>
+    <rect x="2" y="16" width="1" height="1" fill="#e8edf0"/>
+    <rect x="3" y="16" width="1" height="1" fill="#875126"/>
+    <rect x="4" y="16" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="16" width="1" height="1" fill="#ffd20b"/>
+    <rect x="7" y="16" width="1" height="1" fill="#ffd20b"/>
+    <rect x="8" y="16" width="1" height="1" fill="#ffd20b"/>
+    <rect x="9" y="16" width="1" height="1" fill="#ffd20b"/>
+    <rect x="10" y="16" width="1" height="1" fill="#ffd20b"/>
+    <rect x="11" y="16" width="1" height="1" fill="#ffd20b"/>
+    <rect x="13" y="16" width="1" height="1" fill="#875126"/>
+    <rect x="14" y="16" width="1" height="1" fill="#875126"/>
+    <rect x="15" y="16" width="1" height="1" fill="#e8edf0"/>
+    <rect x="3" y="17" width="1" height="1" fill="#e8edf0"/>
+    <rect x="6" y="17" width="1" height="1" fill="#ffd20b"/>
+    <rect x="7" y="17" width="1" height="1" fill="#ffd20b"/>
+    <rect x="8" y="17" width="1" height="1" fill="#ffd20b"/>
+    <rect x="9" y="17" width="1" height="1" fill="#ffd20b"/>
+    <rect x="10" y="17" width="1" height="1" fill="#ffd20b"/>
+    <rect x="11" y="17" width="1" height="1" fill="#ffd20b"/>
+    <rect x="14" y="17" width="1" height="1" fill="#e8edf0"/>
+    <rect x="6" y="18" width="1" height="1" fill="#875126"/>
+    <rect x="7" y="18" width="1" height="1" fill="#875126"/>
+    <rect x="10" y="18" width="1" height="1" fill="#875126"/>
+    <rect x="11" y="18" width="1" height="1" fill="#875126"/>
+    <rect x="6" y="19" width="1" height="1" fill="#875126"/>
+    <rect x="7" y="19" width="1" height="1" fill="#875126"/>
+    <rect x="10" y="19" width="1" height="1" fill="#875126"/>
+    <rect x="11" y="19" width="1" height="1" fill="#875126"/>
+    <rect x="5" y="20" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="6" y="20" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="7" y="20" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="10" y="20" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="11" y="20" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="12" y="20" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="5" y="21" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="6" y="21" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="7" y="21" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="10" y="21" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="11" y="21" width="1" height="1" fill="#3a1f0a"/>
+    <rect x="12" y="21" width="1" height="1" fill="#3a1f0a"/>
   </svg>
   <div class="monkey-label">MONKEY</div>
 </div>
@@ -741,7 +1335,9 @@ let monkeySlipping = false, monkeySlipT = 0, monkeySlipVX = 0, monkeySlipVY = 0;
 let puddles = [];
 let dogEvades = 0, monkeyCatches = 0;
 let powerX = innerWidth / 2, powerY = innerHeight * 0.44;
+let powerVX = 230, powerVY = 150, powerTurnT = 0;
 let powerActive = true, powerCooldown = 0, powerGrace = 0.7, lastDogItem = '', lastMonkeyItem = '';
+let powerSpawnReady = false;
 const ROUND_TIME = 20;
 let roundT = 0;
 
@@ -911,15 +1507,21 @@ function tickIdle(dt){
 }
 
 function placePowerBlock(){
-  const spreadX=Math.min(180, innerWidth*0.18);
-  const spreadY=Math.min(54, innerHeight*0.08);
-  powerX=Math.max(110,Math.min(innerWidth-150,innerWidth/2+(Math.random()-0.5)*spreadX));
-  powerY=Math.max(130,Math.min(innerHeight-230,innerHeight*0.34+(Math.random()-0.5)*spreadY));
+  for(let tries=0;tries<12;tries++){
+    powerX=120+Math.random()*Math.max(80,innerWidth-240);
+    powerY=170+Math.random()*Math.max(80,innerHeight-300);
+    if(!powerSpawnReady||Math.hypot(powerX-dogX,powerY-dogY)>190&&Math.hypot(powerX-monkeyX,powerY-monkeyY)>170) break;
+  }
+  const angle=Math.random()*Math.PI*2;
+  const speed=240+Math.random()*140;
+  powerVX=Math.cos(angle)*speed;
+  powerVY=Math.sin(angle)*speed;
+  powerTurnT=0.45+Math.random()*0.8;
   powerBlock.style.left=powerX+'px';
   powerBlock.style.top=powerY+'px';
   powerBlock.classList.remove('hidden');
   powerActive=true;
-  powerGrace=0.7;
+  powerGrace=1.15;
 }
 
 function chooseItem(owner,pool){
@@ -983,6 +1585,21 @@ function tickPowerBlock(dt){
     if(powerCooldown<=0) placePowerBlock();
     return;
   }
+  powerTurnT-=dt;
+  if(powerTurnT<=0){
+    const angle=Math.atan2(powerVY,powerVX)+(Math.random()-0.5)*1.25;
+    const speed=Math.min(460,Math.max(230,Math.hypot(powerVX,powerVY)+(Math.random()-0.5)*120));
+    powerVX=Math.cos(angle)*speed;
+    powerVY=Math.sin(angle)*speed;
+    powerTurnT=0.5+Math.random()*0.9;
+  }
+  const margin=72;
+  powerX+=powerVX*dt;
+  powerY+=powerVY*dt;
+  if(powerX<margin){ powerX=margin; powerVX=Math.abs(powerVX); }
+  if(powerX>innerWidth-margin){ powerX=innerWidth-margin; powerVX=-Math.abs(powerVX); }
+  if(powerY<170){ powerY=170; powerVY=Math.abs(powerVY); }
+  if(powerY>innerHeight-margin){ powerY=innerHeight-margin; powerVY=-Math.abs(powerVY); }
   powerBlock.style.left=powerX+'px';
   powerBlock.style.top=powerY+'px';
   powerGrace=Math.max(0,powerGrace-dt);
@@ -993,8 +1610,6 @@ function tickPowerBlock(dt){
     collectPowerBlock(dogD<=monkeyD?'dog':'monkey');
   }
 }
-
-placePowerBlock();
 
 function tickRun(dt){
   const dx=runTX-dogX, dy=runTY-dogY;
@@ -1383,6 +1998,8 @@ let mkHitDone = false, mkSpinAngle = 0;
 monkeyX = mkHomeX(); monkeyY = mkHomeY();
 monkeyWrap.style.left = monkeyX+'px';
 monkeyWrap.style.top  = monkeyY+'px';
+powerSpawnReady = true;
+placePowerBlock();
 
 function enterMonkeyMode(m){
   monkeyMode=m; mkT=0; mkHitDone=false; mkSpinAngle=0;
@@ -1748,6 +2365,110 @@ initFace();
 /* ════════════════════════════════════════════════════════════════════
    PIXEL CHAT BOX
    ════════════════════════════════════════════════════════════════════ */
+
+function getAvatarSVG(emotion) {
+  let style = 1;
+  if(emotion === 'happy' || emotion === 'surprised') style = 3;
+  else if(emotion === 'angry' || emotion === 'disgusted') style = 2;
+
+  function gridToSvg(g, p) {
+    let r='';
+    for(let y=0;y<g.length;y++){
+      for(let x=0;x<g[y].length;x++){
+        if(g[y][x]!==' ' && p[g[y][x]]) r+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${p[g[y][x]]}"/>`;
+      }
+    }
+    return `<svg id="dog-svg" viewBox="0 0 16 18" width="130" height="146" shape-rendering="crispEdges">${r}</svg>`;
+  }
+
+  if(style === 1) { // Tank top, yellow glasses, short hair
+    const grid = [
+      "      HHHH      ",
+      "     HHHHHH     ",
+      "    FHWFFWHF    ",
+      "    FFFFFFFF    ",
+      "     FMMMMF     ",
+      "      FFFF      ",
+      "     TTTTTT     ",
+      "    ATTTTTTA    ",
+      "    A TTTT A    ",
+      "    A TTTT A    ",
+      "      JJJJ      ",
+      "      JJJJ      ",
+      "      J  J      ",
+      "      J  J      ",
+      "     DD  DD     "
+    ];
+    return gridToSvg(grid, {'H':'#111','F':'#ffe2ad','W':'#fca311','M':'#1a0800','T':'#fff','A':'#ffe2ad','J':'#1d3557','D':'#222'});
+  } else if (style === 2) { // Red jacket, shades, headphones
+    const grid = [
+      "      HHHH      ",
+      "   g HHHHHH g   ",
+      "   gGHWWWWWHg   ",
+      "   gGFFFFFFFF   ",
+      "     FMMMMF     ",
+      "      FFFF      ",
+      "     RRRRRR     ",
+      "    ARRWWRRA    ",
+      "    A RRWR A    ",
+      "    A RRRR A    ",
+      "      BBBB      ",
+      "      BBBB      ",
+      "      B  B      ",
+      "      B  B      ",
+      "     Wb  bW     "
+    ];
+    return gridToSvg(grid, {'H':'#111','F':'#ffe2ad','W':'#222','M':'#1a0800','R':'#cc1800','A':'#ffe2ad','B':'#111','g':'#7af04a','G':'#fff','b':'#1d3557'});
+  } else { // Bandana, camo
+    const grid = [
+      "      RRRR      ",
+      "   w RRRRRR w   ",
+      "   wWRFFFFRWw   ",
+      "   wWFFFFFFWw   ",
+      "     FMMMMF     ",
+      "      FFFF      ",
+      "     TTTTTT     ",
+      "    ATTTTTTA    ",
+      "    A TTTT A    ",
+      "    A TTTT A    ",
+      "      CCCC      ",
+      "      CCCC      ",
+      "      C  C      ",
+      "      C  C      ",
+      "     DD  DD     "
+    ];
+    return gridToSvg(grid, {'R':'#cc1800','F':'#ffe2ad','T':'#fff','A':'#ffe2ad','C':'#4b5320','D':'#222','w':'#fff','W':'#888','M':'#1a0800'});
+  }
+}
+
+document.getElementById('cam-wrap').classList.add('lobby-mode');
+document.getElementById('dog-wrap').style.display = 'none';
+document.getElementById('monkey-wrap').style.display = 'none';
+document.getElementById('power-block').style.display = 'none';
+document.getElementById('score-board').style.display = 'none';
+
+// We pause the game timer until started
+let gameStarted = false;
+const oldFrame = frame;
+frame = function(ts) {
+  if(!gameStarted) { prevTS=ts; requestAnimationFrame(frame); return; }
+  oldFrame(ts);
+};
+
+document.getElementById('btn-capture').addEventListener('click', () => {
+  const emotion = currentEmotion;
+  document.getElementById('dog-wrap').innerHTML = getAvatarSVG(emotion);
+  
+  document.getElementById('pre-game-lobby').style.display = 'none';
+  document.getElementById('cam-wrap').classList.remove('lobby-mode');
+  
+  document.getElementById('dog-wrap').style.display = '';
+  document.getElementById('monkey-wrap').style.display = '';
+  document.getElementById('power-block').style.display = 'grid';
+  document.getElementById('score-board').style.display = 'grid';
+  gameStarted = true;
+});
+
 </script>
 
 </body>
