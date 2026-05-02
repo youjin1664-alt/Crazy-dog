@@ -10,8 +10,123 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       width: 100vw; height: 100vh;
-      overflow: hidden; background: #fff;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 10%, rgba(255,255,255,0.96) 0 8%, rgba(255,255,255,0) 20%),
+        linear-gradient(180deg, #8ed8ff 0%, #dff6ff 43%, #9de77b 78%, #33a52f 100%);
       cursor: none; user-select: none;
+    }
+
+    #scene-bg {
+      position: fixed; inset: 0; overflow: hidden;
+      pointer-events: none; z-index: 0;
+      perspective: 900px;
+    }
+    #scene-bg::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 16%, rgba(255,255,255,0.88) 0 7%, rgba(255,255,255,0) 18%),
+        radial-gradient(ellipse at 64% 20%, rgba(255,255,255,0.78) 0 9%, rgba(255,255,255,0) 22%),
+        radial-gradient(ellipse at 84% 31%, rgba(255,255,255,0.72) 0 8%, rgba(255,255,255,0) 20%),
+        linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0));
+      filter: blur(1px);
+    }
+    .hill {
+      position: absolute; bottom: 14vh;
+      border-radius: 48% 52% 12% 10% / 70% 70% 16% 15%;
+      transform: rotate(-7deg);
+      box-shadow: inset -28px -24px 40px rgba(20,120,90,0.16), inset 24px 26px 38px rgba(255,255,255,0.25);
+    }
+    .hill.back {
+      left: 36vw; width: 56vw; height: 34vh;
+      background: linear-gradient(150deg, #86edf5 0%, #5acdd9 45%, #39a6bd 100%);
+      opacity: 0.72; filter: blur(0.4px);
+    }
+    .hill.front {
+      right: -8vw; bottom: 0; width: 45vw; height: 48vh;
+      background: linear-gradient(145deg, #c3a485 0%, #80614d 54%, #3f3a3a 100%);
+      border-radius: 70% 0 0 16% / 82% 0 0 18%;
+      transform: rotate(-10deg) skewX(-8deg);
+      box-shadow: inset -50px -26px 55px rgba(12,20,18,0.33), inset 25px 28px 35px rgba(255,255,255,0.22);
+    }
+    .grass {
+      position: absolute; left: -4vw; right: -4vw; bottom: -9vh; height: 39vh;
+      background:
+        radial-gradient(ellipse at 30% 5%, rgba(255,255,255,0.46) 0 8%, rgba(255,255,255,0) 24%),
+        repeating-linear-gradient(100deg, rgba(18,120,30,0.22) 0 2px, rgba(90,220,42,0) 2px 10px),
+        linear-gradient(180deg, #88ef42 0%, #2fbd2a 34%, #0f6928 100%);
+      clip-path: polygon(0 26%, 9% 21%, 20% 25%, 34% 15%, 48% 20%, 60% 10%, 76% 19%, 88% 11%, 100% 17%, 100% 100%, 0 100%);
+      box-shadow: inset 0 24px 34px rgba(255,255,255,0.28), inset 0 -60px 85px rgba(0,35,20,0.42);
+    }
+    .grass::before {
+      content: "";
+      position: absolute; inset: -16px 0 0;
+      background: repeating-linear-gradient(103deg, transparent 0 7px, rgba(245,255,210,0.55) 8px 10px, transparent 11px 17px);
+      opacity: 0.65;
+      transform: skewY(-3deg);
+    }
+    .stone {
+      position: absolute; bottom: 18vh;
+      background: linear-gradient(145deg, #cfb08c 0%, #8f765f 62%, #4b4039 100%);
+      border-radius: 50% 50% 42% 38%;
+      box-shadow: inset 18px 16px 24px rgba(255,255,255,0.22), inset -18px -24px 28px rgba(20,15,10,0.28);
+    }
+    .stone.one { left: 14vw; width: 11vw; height: 24vh; }
+    .stone.two { left: 27vw; bottom: 16vh; width: 7vw; height: 17vh; }
+    .stone.three { left: 8vw; bottom: 26vh; width: 5vw; height: 11vh; }
+    .question-block {
+      position: absolute;
+      width: clamp(74px, 12vw, 160px); aspect-ratio: 1;
+      display: grid; place-items: center;
+      color: rgba(255,255,255,0.92);
+      font: 900 clamp(46px, 8vw, 106px)/1 system-ui, sans-serif;
+      text-shadow: 0 5px 0 rgba(160,120,0,0.35);
+      background: linear-gradient(145deg, #fff245 0%, #ffe000 42%, #d9a800 100%);
+      border-radius: 10px;
+      box-shadow:
+        inset 12px 14px 18px rgba(255,255,255,0.48),
+        inset -14px -18px 20px rgba(145,95,0,0.28),
+        0 18px 28px rgba(40,40,20,0.22);
+      transform-style: preserve-3d;
+    }
+    .question-block::before,
+    .question-block::after {
+      content: ""; position: absolute; width: 10%; height: 10%;
+      border-radius: 50%; background: rgba(180,140,0,0.36);
+      box-shadow: calc(100% * 8.1) 0 rgba(180,140,0,0.36), 0 calc(100% * 8.1) rgba(180,140,0,0.36), calc(100% * 8.1) calc(100% * 8.1) rgba(180,140,0,0.36);
+      left: 8%; top: 8%;
+    }
+    .question-block.big { left: -2vw; top: 23vh; transform: rotateY(-18deg) rotateZ(7deg); }
+    .question-block.mid { right: 8vw; top: 42vh; transform: rotateZ(-13deg) rotateY(18deg); opacity: 0.8; }
+    .question-block.ground { left: 19vw; bottom: 3vh; transform: rotateX(54deg) rotateZ(-8deg); }
+    .brick-stack {
+      position: absolute; left: 3vw; bottom: 13vh;
+      width: 116px; height: 72px;
+      background:
+        linear-gradient(90deg, transparent 0 47%, rgba(0,0,0,0.22) 48% 52%, transparent 53%),
+        repeating-linear-gradient(180deg, #7a442e 0 20px, #3a241f 20px 26px);
+      box-shadow: inset 10px 8px 15px rgba(255,220,150,0.22), inset -10px -10px 16px rgba(0,0,0,0.34), 0 16px 22px rgba(0,0,0,0.2);
+      transform: skewY(1deg);
+    }
+    .palm {
+      position: absolute; bottom: 24vh; left: 6vw;
+      width: 11px; height: 128px;
+      background: linear-gradient(90deg, #4d2f25, #7a543d 45%, #2d201b);
+      border-radius: 999px;
+      transform: rotate(-8deg);
+      box-shadow: inset -4px 0 4px rgba(0,0,0,0.24);
+    }
+    .palm::before {
+      content: "";
+      position: absolute; left: 50%; top: -18px;
+      width: 110px; height: 70px;
+      background:
+        radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0) 0 18%, #067d55 19% 34%, rgba(0,0,0,0) 35%),
+        radial-gradient(ellipse at 20% 84%, rgba(0,0,0,0) 0 20%, #0aa760 21% 34%, rgba(0,0,0,0) 35%),
+        radial-gradient(ellipse at 80% 84%, rgba(0,0,0,0) 0 20%, #076f54 21% 34%, rgba(0,0,0,0) 35%);
+      transform: translateX(-50%) rotate(-10deg);
+      filter: drop-shadow(0 5px 4px rgba(0,70,35,0.18));
     }
 
     #shield-bubble {
@@ -135,10 +250,109 @@
     }
 
     #hold-hint {
-      position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+      position: fixed; top: 66px; left: 50%; transform: translateX(-50%);
       font-family: 'Press Start 2P', monospace; font-size: 6px;
       color: rgba(0,0,0,0.15); letter-spacing: 0.06em;
       pointer-events: none; white-space: nowrap;
+    }
+
+    #score-board {
+      position: fixed; top: 14px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 320;
+      display: grid;
+      grid-template-columns: minmax(96px, 1fr) auto minmax(96px, 1fr);
+      align-items: center; gap: 10px;
+      min-width: min(520px, calc(100vw - 28px));
+      padding: 9px 12px;
+      border: 3px solid rgba(80,120,210,0.74);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 9px 0 rgba(58,91,150,0.18), inset 0 2px 0 rgba(255,255,255,0.8);
+      backdrop-filter: blur(6px);
+      font-family: 'Press Start 2P', monospace;
+      color: #1d2f42;
+      pointer-events: none;
+    }
+    .score-side {
+      display: flex; flex-direction: column; gap: 5px;
+      min-width: 0; white-space: nowrap; text-align: center;
+      font-size: 7px; line-height: 1.1;
+    }
+    .score-side strong {
+      font-size: 16px; line-height: 1;
+      text-shadow: 0 2px 0 rgba(255,255,255,0.9);
+    }
+    .score-side.dog strong { color: #248f34; }
+    .score-side.monkey strong { color: #c64120; }
+    .score-vs {
+      width: 46px; height: 32px;
+      display: grid; place-items: center;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #ffe75a, #ffb51e);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,0.55), inset 0 -4px 0 rgba(177,112,0,0.25);
+      font-size: 9px;
+    }
+    #item-toast {
+      position: fixed; top: 66px; left: 50%;
+      transform: translate(-50%, -6px) scale(0.94);
+      z-index: 321;
+      opacity: 0;
+      max-width: min(520px, calc(100vw - 32px));
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: rgba(20,30,42,0.84);
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px; line-height: 1.55;
+      text-align: center;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    #item-toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    #power-block {
+      position: fixed;
+      width: 76px; height: 76px;
+      z-index: 180;
+      display: grid; place-items: center;
+      color: rgba(255,255,255,0.94);
+      font: 900 54px/1 system-ui, sans-serif;
+      text-shadow: 0 4px 0 rgba(145,105,0,0.38);
+      background: linear-gradient(145deg, #fff45a 0%, #ffd600 45%, #c99500 100%);
+      border-radius: 9px;
+      box-shadow:
+        inset 9px 10px 14px rgba(255,255,255,0.52),
+        inset -10px -13px 16px rgba(120,82,0,0.3),
+        0 14px 24px rgba(45,55,30,0.24);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      transition: opacity 0.18s ease, filter 0.18s ease;
+      animation: powerBob 1.6s ease-in-out infinite;
+    }
+    #power-block::before {
+      content: "";
+      position: absolute; inset: 7px;
+      border-radius: 7px;
+      border: 2px solid rgba(255,255,255,0.22);
+    }
+    #power-block::after {
+      content: "";
+      position: absolute; width: 7px; height: 7px; left: 8px; top: 8px;
+      border-radius: 50%;
+      background: rgba(170,125,0,0.38);
+      box-shadow: 53px 0 rgba(170,125,0,0.38), 0 53px rgba(170,125,0,0.38), 53px 53px rgba(170,125,0,0.38);
+    }
+    #power-block.hidden {
+      opacity: 0;
+      filter: saturate(0.4) blur(2px);
+    }
+    @keyframes powerBob {
+      0%, 100% { margin-top: 0; }
+      50% { margin-top: -10px; }
     }
 
     /* ── MONKEY ── */
@@ -166,7 +380,27 @@
 <body>
 
 <div id="cursor-dot"></div>
+<div id="score-board" aria-live="polite">
+  <div class="score-side dog">DOG EVADE<strong id="dog-score">0</strong></div>
+  <div class="score-vs">VS</div>
+  <div class="score-side monkey">MONKEY CATCH<strong id="monkey-score">0</strong></div>
+</div>
+<div id="item-toast"></div>
+<div id="scene-bg" aria-hidden="true">
+  <div class="hill back"></div>
+  <div class="stone one"></div>
+  <div class="stone two"></div>
+  <div class="stone three"></div>
+  <div class="question-block big">?</div>
+  <div class="question-block mid">?</div>
+  <div class="question-block ground">?</div>
+  <div class="palm"></div>
+  <div class="brick-stack"></div>
+  <div class="hill front"></div>
+  <div class="grass"></div>
+</div>
 <canvas id="particle-canvas"></canvas>
+<div id="power-block" aria-hidden="true">?</div>
 
 <!-- ── HOTDOG DOG ── -->
 <div id="dog-wrap">
@@ -472,15 +706,23 @@ let shieldActive = false, shieldEl = null, shieldT = 0;
 let shieldUses = 0;
 let speedBoost = false, speedBoostT = 0;
 let dogInvisible = false, invisibleT = 0;
+let monkeyHaste = false, monkeyHasteT = 0;
 let monkeyKnockedT = -1, monkeyKnockVX = 0, monkeyKnockVY = 0;
 let monkeySlipping = false, monkeySlipT = 0, monkeySlipVX = 0, monkeySlipVY = 0;
 let puddles = [];
+let dogEvades = 0, monkeyCatches = 0;
+let powerX = innerWidth / 2, powerY = innerHeight * 0.44;
+let powerActive = true, powerCooldown = 0, powerGrace = 0.7, lastDogItem = '', lastMonkeyItem = '';
 
 /* DOM */
 const dogWrap   = document.getElementById('dog-wrap');
 const dogSvg    = document.getElementById('dog-svg');
 const cursorDot  = document.getElementById('cursor-dot');
 const cursorDot2 = document.getElementById('cursor-dot2');
+const dogScoreEl = document.getElementById('dog-score');
+const monkeyScoreEl = document.getElementById('monkey-score');
+const itemToast = document.getElementById('item-toast');
+const powerBlock = document.getElementById('power-block');
 
 /* ════════════════════════════════════════════════════════════════════
    HELPERS
@@ -508,6 +750,39 @@ function applyTransform({bounceY=0,rotation=0,scaleY=1,overrideX=null}={}){
   const fx=facingLeft?-1:1;
   const sx=overrideX!==null?overrideX:fx*stretchX;
   dogSvg.style.transform=`rotate(${rotation}deg) translateY(${bounceY}px) scale(${sx*shrinkScale},${scaleY*shrinkScale})`;
+}
+function updateScore(){
+  dogScoreEl.textContent=dogEvades;
+  monkeyScoreEl.textContent=monkeyCatches;
+}
+function showItemToast(text){
+  itemToast.textContent=text;
+  itemToast.classList.add('show');
+  clearTimeout(showItemToast.timer);
+  showItemToast.timer=setTimeout(()=>itemToast.classList.remove('show'),1500);
+}
+function activateShield(countUse=true){
+  if(countUse){
+    if(shieldUses>=MAX_SHIELD_USES) return false;
+    shieldUses++;
+  }
+  shieldActive=true; shieldT=0;
+  if(!shieldEl){
+    shieldEl=document.createElement('div');
+    shieldEl.id='shield-bubble';
+    document.body.appendChild(shieldEl);
+  }
+  shieldEl.style.left=dogX+'px'; shieldEl.style.top=dogY+'px';
+  return true;
+}
+function addDogEvade(reason){
+  dogEvades++;
+  updateScore();
+  showItemToast(reason||'DOG EVADED');
+}
+function addMonkeyCatch(){
+  monkeyCatches++;
+  updateScore();
 }
 
 /* ════════════════════════════════════════════════════════════════════
@@ -563,11 +838,13 @@ function frame(ts){
   if(mode==='stunned')       tickStunned(dt);
   tickMonkey(dt);
   tickClones(dt);
+  tickPowerBlock(dt);
   if(shrinkMode){ shrinkT+=dt; if(shrinkT>=5){ shrinkMode=false; shrinkScale=1.0; } }
   if(shieldActive){ shieldT+=dt; if(shieldT>=4){ shieldActive=false; if(shieldEl){shieldEl.remove();shieldEl=null;} } }
   if(shieldEl){ shieldEl.style.left=dogX+'px'; shieldEl.style.top=dogY+'px'; }
   if(speedBoost){ speedBoostT+=dt; if(speedBoostT>=3){ speedBoost=false; } }
   if(dogInvisible){ invisibleT+=dt; if(invisibleT>=2.5){ dogInvisible=false; dogWrap.style.opacity='1'; } }
+  if(monkeyHaste){ monkeyHasteT+=dt; if(monkeyHasteT>=3){ monkeyHaste=false; } }
   if(monkeyKnockedT>=0){ monkeyKnockedT+=dt; if(monkeyKnockedT>1.3) monkeyKnockedT=-1; }
 
   dogWrap.style.left=(dogX+shakeOffsetX)+'px';
@@ -586,6 +863,93 @@ function tickIdle(dt){
   const b=1+Math.sin(breathT*1.55)*0.018;
   applyTransform({scaleY:b});
 }
+
+function placePowerBlock(){
+  const spreadX=Math.min(180, innerWidth*0.18);
+  const spreadY=Math.min(54, innerHeight*0.08);
+  powerX=Math.max(110,Math.min(innerWidth-150,innerWidth/2+(Math.random()-0.5)*spreadX));
+  powerY=Math.max(130,Math.min(innerHeight-230,innerHeight*0.34+(Math.random()-0.5)*spreadY));
+  powerBlock.style.left=powerX+'px';
+  powerBlock.style.top=powerY+'px';
+  powerBlock.classList.remove('hidden');
+  powerActive=true;
+  powerGrace=0.7;
+}
+
+function chooseItem(owner,pool){
+  const last=owner==='dog'?lastDogItem:lastMonkeyItem;
+  const choices=pool.length>1?pool.filter(item=>item.id!==last):pool;
+  const item=choices[Math.floor(Math.random()*choices.length)];
+  if(owner==='dog') lastDogItem=item.id;
+  else lastMonkeyItem=item.id;
+  return item;
+}
+
+function awardDogItem(){
+  const danger=Math.hypot(monkeyX-dogX,monkeyY-dogY)<260||monkeyMode==='chasing'||cloneMode;
+  const pool=[
+    {id:'turbo',label:'DOG ITEM: TURBO RUN',run:()=>{ speedBoost=true; speedBoostT=0; }},
+    {id:'ghost',label:'DOG ITEM: GHOST DODGE',run:()=>{ dogInvisible=true; invisibleT=0; dogWrap.style.opacity='0.12'; }},
+    {id:'tiny',label:'DOG ITEM: TINY ESCAPE',run:()=>{ shrinkMode=true; shrinkT=0; shrinkScale=1/3; }},
+    {id:'warp',label:'DOG ITEM: SAFE WARP',run:()=>{
+      dogX=80+Math.random()*(innerWidth-160);
+      dogY=110+Math.random()*(innerHeight-220);
+      burstAt(dogX,dogY,'#70e030',14,6);
+    }},
+    {id:'blast',label:'DOG ITEM: PEPPER BLAST',run:()=>{ knockbackMonkeys(); burstAt(dogX,dogY,'rgba(230,230,230,0.9)',18,8); }},
+  ];
+  if(danger) pool.push({id:'bubble',label:'DOG ITEM: FREE BUBBLE',run:()=>activateShield(false)});
+  const item=chooseItem('dog',pool);
+  item.run();
+  showItemToast(item.label);
+}
+
+function awardMonkeyItem(){
+  const far=Math.hypot(monkeyX-dogX,monkeyY-dogY)>310;
+  const pool=[
+    {id:'haste',label:'MONKEY ITEM: HYPER CHASE',run:()=>{ monkeyHaste=true; monkeyHasteT=0; }},
+    {id:'clone',label:'MONKEY ITEM: CLONE RUSH',run:()=>{ if(!cloneMode) startClones(); else { monkeyHaste=true; monkeyHasteT=0; } }},
+    {id:'reveal',label:'MONKEY ITEM: REVEAL DOG',run:()=>{ dogInvisible=false; dogWrap.style.opacity='1'; shieldActive=false; if(shieldEl){shieldEl.remove();shieldEl=null;} }},
+    {id:'magnet',label:'MONKEY ITEM: CLOSER!',run:()=>{
+      const dx=dogX-monkeyX, dy=dogY-monkeyY, d=Math.hypot(dx,dy)||1;
+      monkeyX+=dx/d*(far?180:100);
+      monkeyY+=dy/d*(far?180:100);
+    }},
+    {id:'trap',label:'MONKEY ITEM: MUSTARD TRAP',run:()=>{ puddles.push({x:dogX,y:dogY,r:92,life:1}); }},
+  ];
+  const item=chooseItem('monkey',pool);
+  item.run();
+  showItemToast(item.label);
+}
+
+function collectPowerBlock(owner){
+  powerActive=false;
+  powerCooldown=2.8;
+  powerBlock.classList.add('hidden');
+  burstAt(powerX,powerY,owner==='dog'?'#7dff4a':'#ff633a',18,7);
+  if(owner==='dog') awardDogItem();
+  else awardMonkeyItem();
+}
+
+function tickPowerBlock(dt){
+  if(!powerActive){
+    powerCooldown-=dt;
+    if(powerCooldown<=0) placePowerBlock();
+    return;
+  }
+  powerBlock.style.left=powerX+'px';
+  powerBlock.style.top=powerY+'px';
+  powerGrace=Math.max(0,powerGrace-dt);
+  if(powerGrace>0) return;
+  const dogD=Math.hypot(dogX-powerX,dogY-powerY);
+  const monkeyD=Math.hypot(monkeyX-powerX,monkeyY-powerY);
+  if(dogD<76||monkeyD<64){
+    collectPowerBlock(dogD<=monkeyD?'dog':'monkey');
+  }
+}
+
+placePowerBlock();
+
 function tickRun(dt){
   const dx=runTX-dogX, dy=runTY-dogY;
   if(Math.hypot(dx,dy)<28)pickRunTarget();
@@ -724,7 +1088,7 @@ requestAnimationFrame(frame);
    ════════════════════════════════════════════════════════════════════ */
 const pCanvas=document.getElementById('particle-canvas');
 const pCtx=pCanvas.getContext('2d');
-function resizeCanvas(){ pCanvas.width=innerWidth; pCanvas.height=innerHeight; }
+function resizeCanvas(){ pCanvas.width=innerWidth; pCanvas.height=innerHeight; placePowerBlock(); }
 resizeCanvas(); window.addEventListener('resize',resizeCanvas);
 
 class Particle{
@@ -979,10 +1343,11 @@ function enterMonkeyMode(m){
 }
 
 function hitDog(){
-  if(dogInvisible) return;
+  if(dogInvisible){ addDogEvade('DOG EVADED: GHOST'); return; }
   if(shieldActive){
     shieldActive=false;
     if(shieldEl){ shieldEl.remove(); shieldEl=null; }
+    addDogEvade('DOG EVADED: BLOCK');
     const block=document.createElement('div');
     block.textContent='BLOCK!';
     block.style.cssText=`position:fixed;left:${dogX-40}px;top:${dogY-72}px;`+
@@ -997,6 +1362,7 @@ function hitDog(){
     return;
   }
   if(['belly','stunned'].includes(mode)) return;
+  addMonkeyCatch();
   enterMode('stunned');
   burstAt(dogX, dogY-20, '#FFEE00', 10, 6);
   burstAt(dogX, dogY-20, '#FF8800', 8,  4);
@@ -1084,16 +1450,17 @@ function tickMonkey(dt){
       break;
     }
     case 'chasing':{
+      const chaseSpeed=MONKEY_SPEED*(monkeyHaste?1.65:1);
       if(cloneMode){
         const dx=dogX-monkeyX, dy=dogY-monkeyY, dist=Math.hypot(dx,dy);
         mkFacing=dx>=0?1:-1;
-        if(dist>58){ monkeyX+=(dx/dist)*MONKEY_SPEED*dt; monkeyY+=(dy/dist)*MONKEY_SPEED*dt; }
+        if(dist>58){ monkeyX+=(dx/dist)*chaseSpeed*dt; monkeyY+=(dy/dist)*chaseSpeed*dt; }
         else { enterMonkeyMode('hitting'); break; }
         const bY=-(Math.abs(Math.sin(mkT*11))*14);
         monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
         break;
       }
-      const spd=MONKEY_SPEED*dt;
+      const spd=chaseSpeed*dt;
       if(keys['ArrowUp']) monkeyY-=spd;
       if(keys['ArrowDown']) monkeyY+=spd;
       if(keys['ArrowLeft']){ monkeyX-=spd; mkFacing=-1; }
@@ -1142,13 +1509,7 @@ function startShrink(){
 }
 
 function startShield(){
-  if(shieldUses>=MAX_SHIELD_USES) return;
-  shieldUses++;
-  shieldActive=true; shieldT=0;
-  shieldEl=document.createElement('div');
-  shieldEl.id='shield-bubble';
-  shieldEl.style.left=dogX+'px'; shieldEl.style.top=dogY+'px';
-  document.body.appendChild(shieldEl);
+  activateShield(true);
 }
 
 function startClones(){
@@ -1182,6 +1543,7 @@ function startClones(){
 function tickClones(dt){
   if(!cloneMode) return;
   cloneT+=dt;
+  const cloneSpeed=CLONE_SPEED*(monkeyHaste?1.35:1);
   for(let i=0;i<clones.length;i++){
     const c=clones[i], el=cloneDivs[i];
     const svg=el.querySelector('svg');
@@ -1215,7 +1577,7 @@ function tickClones(dt){
       c.facing=(dogX-c.x)>=0?1:-1;
       if(checkPuddle(c.x,c.y)){
         c.knockVX=(dx/dist)*360; c.knockVY=(dy/dist)*360; c.knockedT=0;
-      } else if(dist>(shrinkMode?20:52)){ c.x+=(dx/dist)*CLONE_SPEED*dt; c.y+=(dy/dist)*CLONE_SPEED*dt; }
+      } else if(dist>(shrinkMode?20:52)){ c.x+=(dx/dist)*cloneSpeed*dt; c.y+=(dy/dist)*cloneSpeed*dt; }
       else { c.hitting=true; c.hitT=0; c.hitDone=false; }
       // 빠른 달리기 바운스
       const bY=-(Math.abs(Math.sin((cloneT*14)+i*2.1))*16);
