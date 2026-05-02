@@ -464,6 +464,10 @@ let hand2X = innerWidth*0.75, hand2Y = innerHeight/2, hand2Detected = false;
 let cloneMode = false, cloneT = 0;
 let clones = [], cloneDivs = [];
 const CLONE_DURATION = 5;
+const MAX_CLONE_USES = 3;
+const MONKEY_SPEED = 750;
+const CLONE_SPEED = 1260;
+let cloneUses = 0;
 let shrinkMode = false, shrinkT = 0, shrinkScale = 1.0;
 let shieldActive = false, shieldEl = null, shieldT = 0;
 let speedBoost = false, speedBoostT = 0;
@@ -514,8 +518,9 @@ function applyTransform({bounceY=0,rotation=0,scaleY=1,overrideX=null}={}){
 const keys={};
 document.addEventListener('keydown',e=>{
   keys[e.key]=true;
-  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','r','t'].includes(e.key)) e.preventDefault();
-  if(e.key==='n'&&!cloneMode) startClones();
+  const key=e.key.toLowerCase();
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','r','t','n'].includes(e.key)||key==='n') e.preventDefault();
+  if(key==='n'&&!cloneMode&&cloneUses<MAX_CLONE_USES) startClones();
   if(e.key==='r'&&!shrinkMode) startShrink();
   if(e.key==='t'&&!shieldActive) startShield();
 });
@@ -1082,13 +1087,13 @@ function tickMonkey(dt){
       if(cloneMode){
         const dx=dogX-monkeyX, dy=dogY-monkeyY, dist=Math.hypot(dx,dy);
         mkFacing=dx>=0?1:-1;
-        if(dist>58){ monkeyX+=(dx/dist)*250*dt; monkeyY+=(dy/dist)*250*dt; }
+        if(dist>58){ monkeyX+=(dx/dist)*MONKEY_SPEED*dt; monkeyY+=(dy/dist)*MONKEY_SPEED*dt; }
         else { enterMonkeyMode('hitting'); break; }
         const bY=-(Math.abs(Math.sin(mkT*11))*14);
         monkeySvg.style.transform=`scaleX(${mkFacing}) translateY(${bY}px)`;
         break;
       }
-      const spd=250*dt;
+      const spd=MONKEY_SPEED*dt;
       if(keys['ArrowUp']) monkeyY-=spd;
       if(keys['ArrowDown']) monkeyY+=spd;
       if(keys['ArrowLeft']){ monkeyX-=spd; mkFacing=-1; }
@@ -1145,6 +1150,8 @@ function startShield(){
 }
 
 function startClones(){
+  if(cloneUses>=MAX_CLONE_USES) return;
+  cloneUses++;
   cloneMode=true; cloneT=0;
   // 화면 세 귀퉁이에서 출발
   const starts=[
@@ -1175,7 +1182,6 @@ function startClones(){
 function tickClones(dt){
   if(!cloneMode) return;
   cloneT+=dt;
-  const CLONE_SPD=420;
   for(let i=0;i<clones.length;i++){
     const c=clones[i], el=cloneDivs[i];
     const svg=el.querySelector('svg');
@@ -1209,7 +1215,7 @@ function tickClones(dt){
       c.facing=(dogX-c.x)>=0?1:-1;
       if(checkPuddle(c.x,c.y)){
         c.knockVX=(dx/dist)*360; c.knockVY=(dy/dist)*360; c.knockedT=0;
-      } else if(dist>(shrinkMode?20:52)){ c.x+=(dx/dist)*CLONE_SPD*dt; c.y+=(dy/dist)*CLONE_SPD*dt; }
+      } else if(dist>(shrinkMode?20:52)){ c.x+=(dx/dist)*CLONE_SPEED*dt; c.y+=(dy/dist)*CLONE_SPEED*dt; }
       else { c.hitting=true; c.hitT=0; c.hitDone=false; }
       // 빠른 달리기 바운스
       const bY=-(Math.abs(Math.sin((cloneT*14)+i*2.1))*16);
